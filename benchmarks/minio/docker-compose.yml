@@ -1,0 +1,19 @@
+# The API Gateway is currently used to expose the Controller API
+#   see apigateway/conf/whisk-docker-compose.conf
+# Minio is used to mock an object storage ( i.e. S3) that hosts the api-gateway configuration.
+# Minio also exposes a web UI to browse the files: http://localhost:9001/minio/api-gateway/
+version: '3'
+
+services:
+  minio:
+    image: minio/minio
+    command:
+      - server
+      - /data
+    environment:
+      MINIO_ACCESS_KEY: testkey
+      MINIO_SECRET_KEY: testsecret
+    volumes:
+      - ~/tmp/openwhisk/minio:/data:rw
+    ports:
+      - "9002:9000"
