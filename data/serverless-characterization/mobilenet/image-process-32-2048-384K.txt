@@ -1,0 +1,20 @@
+Experiment Setup:
+-----------------
+ok: created action mobilenet
+Log file -> logs/SWI.log
+The JSON config file cannot be read
+
+Experiment Details:
+-------------------
+CPU: 32
+MEM: 2048
+
+Experiment Begins:
+------------------
+Image: 384K-puffin.jpg
+latency: 
+max_mem: 23170818048
+latency: 
+max_mem: 23170818048
+latency: 
+max_mem: 23170818048

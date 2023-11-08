@@ -1,0 +1,66 @@
+Experiment Setup:
+-----------------
+ok: updated action image-process
+Log file -> logs/SWI.log
+{'test_name': 'image_process_test', 'test_duration_in_seconds': 100, 'random_seed': 100, 'blocking_cli': False, 'endpoint': 'local_openwhisk', 'instances': {'instance1': {'application': 'matmult', 'distribution': 'Poisson', 'rate': 0.1}, 'instance2': {'application': 'encryption', 'distribution': 'Uniform', 'rate': 0.1}, 'instance3': {'application': 'mobilenet', 'distribution': 'Uniform', 'rate': 0.1}, 'instance4': {'application': 'linpack', 'distribution': 'Uniform', 'rate': 0.1}}, 'perf_monitoring': {'runtime_script': 'monitoring/RuntimeMonitoring.sh', 'post_script': None}}
+[['test_name', <class 'str'>], 'image_process_test']
+[['blocking_cli', <class 'bool'>], False]
+Action is: matmult
+Action is: encryption
+Action is: mobilenet
+Action is: linpack
+
+Experiment Details:
+-------------------
+CPU: 16
+MEM: 2048
+
+Experiment Begins:
+------------------
+Image: 12K-gundam2.jpg
+"latency": 0.007275104522705078
+latency: 0.007275104522705078
+max_mem: 50954240
+"latency": 0.010362863540649414
+latency: 0.010362863540649414
+max_mem: 50954240
+"latency": 0.009323596954345703
+latency: 0.009323596954345703
+max_mem: 50954240
+"latency": 0.01095438003540039
+latency: 0.01095438003540039
+max_mem: 50954240
+"latency": 0.00988626480102539
+latency: 0.00988626480102539
+max_mem: 50954240
+"latency": 0.007860422134399414
+latency: 0.007860422134399414
+max_mem: 50954240
+"latency": 0.006989479064941406
+latency: 0.006989479064941406
+max_mem: 50954240
+"latency": 0.008954286575317383
+latency: 0.008954286575317383
+max_mem: 50954240
+"latency": 0.0068094730377197266
+latency: 0.0068094730377197266
+max_mem: 50987008
+"latency": 0.010714530944824219
+latency: 0.010714530944824219
+max_mem: 50987008
+64cafb01afc6
+43511de015fa
+7b1f60a0fb2b
+e4b9708d1f22
+8ef586394199
+cb5bd149e489
+3da682f49933
+38bf0ccc829f
+7c2a1eb3e8b3
+b989ad04b4cc
+faf4ce6e93c7
+90ae4a8b202a
+794f887b7fe5
+036ccb56339a
+26f23ad980cf
+a9d434f3c038

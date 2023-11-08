@@ -1,0 +1,72 @@
+Experiment Setup:
+-----------------
+ok: updated action encrypt
+Log file -> logs/SWI.log
+{'test_name': 'encrypt_test', 'test_duration_in_seconds': 150, 'random_seed': 100, 'blocking_cli': False, 'endpoint': 'local_openwhisk', 'instances': {'instance1': {'application': 'matmult', 'distribution': 'Poisson', 'rate': 0.25}, 'instance2': {'application': 'linpack', 'distribution': 'Uniform', 'rate': 0.25}, 'instance3': {'application': 'mobilenet', 'distribution': 'Uniform', 'rate': 0.25}, 'instance4': {'application': 'image_process', 'distribution': 'Uniform', 'rate': 0.25}}, 'perf_monitoring': {'runtime_script': 'monitoring/RuntimeMonitoring.sh', 'post_script': None}}
+[['test_name', <class 'str'>], 'encrypt_test']
+[['blocking_cli', <class 'bool'>], False]
+Action is: matmult
+Action is: linpack
+Action is: mobilenet
+Action is: image_process
+
+Experiment Details:
+-------------------
+CPU: 96
+MEM: 2048
+
+Experiment Begins:
+------------------
+STRING SIZE: 1000
+latency: 0.25288844108581543
+max_mem: 18333696
+latency: 0.2484424114227295
+max_mem: 18333696
+latency: 0.24854135513305664
+max_mem: 18333696
+latency: 0.2535879611968994
+max_mem: 18333696
+latency: 0.2487812042236328
+max_mem: 18333696
+latency: 0.24924254417419434
+max_mem: 18333696
+latency: 0.2483067512512207
+max_mem: 18333696
+latency: 0.24924659729003906
+max_mem: 18333696
+latency: 0.24862933158874512
+max_mem: 18333696
+latency: 0.24800467491149902
+max_mem: 18333696
+6e6006d79f37
+88d348db2abe
+0104eeca39bc
+b9868ca05482
+732bb2c44d33
+3490ecdd6771
+09cf1e20fb5e
+482f70242103
+2437021ee698
+9eeb94805f3e
+bd6a92e60155
+c4593fb0ee01
+ce6c3c587e1e
+bec320897bf6
+e112bef39859
+b324867a2c62
+7e093893fc7c
+8d1f64face38
+961e2f54b2c9
+173546dd0adf
+ab0649c8c7a1
+6857769dbc50
+b4e49043ee0c
+b80252d1e16a
+40c2ca872b89
+2196337fa859
+ad71c8d4ac99
+64b3fadf8154
+f582d5b83462
+78392da28ec3
+aac4a4f13db5
+d5dbd62753e7

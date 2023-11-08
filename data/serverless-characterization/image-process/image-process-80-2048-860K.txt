@@ -1,0 +1,66 @@
+Experiment Setup:
+-----------------
+ok: updated action image-process
+Log file -> logs/SWI.log
+{'test_name': 'image_process_test', 'test_duration_in_seconds': 100, 'random_seed': 100, 'blocking_cli': False, 'endpoint': 'local_openwhisk', 'instances': {'instance1': {'application': 'matmult', 'distribution': 'Poisson', 'rate': 0.1}, 'instance2': {'application': 'encryption', 'distribution': 'Uniform', 'rate': 0.1}, 'instance3': {'application': 'mobilenet', 'distribution': 'Uniform', 'rate': 0.1}, 'instance4': {'application': 'linpack', 'distribution': 'Uniform', 'rate': 0.1}}, 'perf_monitoring': {'runtime_script': 'monitoring/RuntimeMonitoring.sh', 'post_script': None}}
+[['test_name', <class 'str'>], 'image_process_test']
+[['blocking_cli', <class 'bool'>], False]
+Action is: matmult
+Action is: encryption
+Action is: mobilenet
+Action is: linpack
+
+Experiment Details:
+-------------------
+CPU: 80
+MEM: 2048
+
+Experiment Begins:
+------------------
+Image: 860K-gundam3.jpg
+"latency": 0.46338677406311035
+latency: 0.46338677406311035
+max_mem: 112132096
+"latency": 0.49898219108581543
+latency: 0.49898219108581543
+max_mem: 112132096
+"latency": 0.5016472339630127
+latency: 0.5016472339630127
+max_mem: 112132096
+"latency": 0.5027995109558105
+latency: 0.5027995109558105
+max_mem: 112132096
+"latency": 0.5044260025024414
+latency: 0.5044260025024414
+max_mem: 112132096
+"latency": 0.5033771991729736
+latency: 0.5033771991729736
+max_mem: 112132096
+"latency": 0.5066220760345459
+latency: 0.5066220760345459
+max_mem: 112132096
+"latency": 0.5009493827819824
+latency: 0.5009493827819824
+max_mem: 112132096
+"latency": 0.5186374187469482
+latency: 0.5186374187469482
+max_mem: 112132096
+"latency": 0.5045170783996582
+latency: 0.5045170783996582
+max_mem: 112132096
+305aae244c49
+3044b6b436b4
+058cc9b2d99c
+8741f0b3de8c
+2b60eb03de60
+b1358e5a6aeb
+f7cbce89b919
+b2eec28588db
+bef14b9762ce
+c326023902b4
+3f888f94c1b1
+f8c8c104d648
+e1fd159aa9a0
+7dd0e78c786e
+b0fe0cf856ed
+f3977bafb7b6

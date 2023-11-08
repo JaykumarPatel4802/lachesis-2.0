@@ -1,0 +1,63 @@
+Experiment Setup:
+-----------------
+ok: updated action image-process
+Log file -> logs/SWI.log
+{'test_name': 'image_process_test', 'test_duration_in_seconds': 100, 'random_seed': 100, 'blocking_cli': False, 'endpoint': 'local_openwhisk', 'instances': {'instance1': {'application': 'matmult', 'distribution': 'Poisson', 'rate': 0.1}, 'instance2': {'application': 'encryption', 'distribution': 'Uniform', 'rate': 0.1}, 'instance3': {'application': 'mobilenet', 'distribution': 'Uniform', 'rate': 0.1}, 'instance4': {'application': 'linpack', 'distribution': 'Uniform', 'rate': 0.1}}, 'perf_monitoring': {'runtime_script': 'monitoring/RuntimeMonitoring.sh', 'post_script': None}}
+[['test_name', <class 'str'>], 'image_process_test']
+[['blocking_cli', <class 'bool'>], False]
+Action is: matmult
+Action is: encryption
+Action is: mobilenet
+Action is: linpack
+
+Experiment Details:
+-------------------
+CPU: 16
+MEM: 2048
+
+Experiment Begins:
+------------------
+Image: 384K-puffin.jpg
+"latency": 0.08962082862854004
+latency: 0.08962082862854004
+max_mem: 60596224
+"latency": 0.08952879905700684
+latency: 0.08952879905700684
+max_mem: 60596224
+"latency": 0.09402036666870117
+latency: 0.09402036666870117
+max_mem: 60596224
+"latency": 0.08800768852233887
+latency: 0.08800768852233887
+max_mem: 60596224
+"latency": 0.09350395202636719
+latency: 0.09350395202636719
+max_mem: 60596224
+"latency": 0.09318923950195312
+latency: 0.09318923950195312
+max_mem: 60596224
+"latency": 0.09579610824584961
+latency: 0.09579610824584961
+max_mem: 60596224
+"latency": 0.09263277053833008
+latency: 0.09263277053833008
+max_mem: 60596224
+"latency": 0.09055256843566895
+latency: 0.09055256843566895
+max_mem: 60596224
+"latency": 0.09260845184326172
+latency: 0.09260845184326172
+max_mem: 60596224
+a055d419e4cb
+8b8f068ccb6a
+79f936916545
+fcb2a4eb6ccf
+5a6c8329069c
+b5ba77cd9457
+3ec1dff8088b
+df2f5a62e197
+14ae411d0151
+2fa0840f37f5
+3819845552f0
+3d9c0920a067
+57803aa5d8b6

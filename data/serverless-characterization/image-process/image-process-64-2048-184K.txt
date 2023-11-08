@@ -1,0 +1,62 @@
+Experiment Setup:
+-----------------
+ok: updated action image-process
+Log file -> logs/SWI.log
+{'test_name': 'image_process_test', 'test_duration_in_seconds': 100, 'random_seed': 100, 'blocking_cli': False, 'endpoint': 'local_openwhisk', 'instances': {'instance1': {'application': 'matmult', 'distribution': 'Poisson', 'rate': 0.1}, 'instance2': {'application': 'encryption', 'distribution': 'Uniform', 'rate': 0.1}, 'instance3': {'application': 'mobilenet', 'distribution': 'Uniform', 'rate': 0.1}, 'instance4': {'application': 'linpack', 'distribution': 'Uniform', 'rate': 0.1}}, 'perf_monitoring': {'runtime_script': 'monitoring/RuntimeMonitoring.sh', 'post_script': None}}
+[['test_name', <class 'str'>], 'image_process_test']
+[['blocking_cli', <class 'bool'>], False]
+Action is: matmult
+Action is: encryption
+Action is: mobilenet
+Action is: linpack
+
+Experiment Details:
+-------------------
+CPU: 64
+MEM: 2048
+
+Experiment Begins:
+------------------
+Image: 184K-rafale.jpg
+"latency": 0.3565332889556885
+latency: 0.3565332889556885
+max_mem: 93999104
+"latency": 0.35907506942749023
+latency: 0.35907506942749023
+max_mem: 93999104
+"latency": 0.3570692539215088
+latency: 0.3570692539215088
+max_mem: 93999104
+"latency": 0.3571512699127197
+latency: 0.3571512699127197
+max_mem: 93999104
+"latency": 0.3566017150878906
+latency: 0.3566017150878906
+max_mem: 93999104
+"latency": 0.3523421287536621
+latency: 0.3523421287536621
+max_mem: 93999104
+"latency": 0.3609178066253662
+latency: 0.3609178066253662
+max_mem: 93999104
+"latency": 0.355241060256958
+latency: 0.355241060256958
+max_mem: 93999104
+"latency": 0.3668031692504883
+latency: 0.3668031692504883
+max_mem: 93999104
+"latency": 0.35748744010925293
+latency: 0.35748744010925293
+max_mem: 93999104
+e20894ea133e
+27e33c44ed96
+be301f61f139
+d992f06d6ab7
+66b0998c6a95
+31affb46c5c1
+fb61dd990b7f
+85fd4068f88e
+86b24d2043e4
+a680bada3ade
+f2c25ebe1502
+7948f53eb364

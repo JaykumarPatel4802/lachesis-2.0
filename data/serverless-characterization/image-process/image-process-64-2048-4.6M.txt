@@ -1,0 +1,61 @@
+Experiment Setup:
+-----------------
+ok: updated action image-process
+Log file -> logs/SWI.log
+{'test_name': 'image_process_test', 'test_duration_in_seconds': 100, 'random_seed': 100, 'blocking_cli': False, 'endpoint': 'local_openwhisk', 'instances': {'instance1': {'application': 'matmult', 'distribution': 'Poisson', 'rate': 0.1}, 'instance2': {'application': 'encryption', 'distribution': 'Uniform', 'rate': 0.1}, 'instance3': {'application': 'mobilenet', 'distribution': 'Uniform', 'rate': 0.1}, 'instance4': {'application': 'linpack', 'distribution': 'Uniform', 'rate': 0.1}}, 'perf_monitoring': {'runtime_script': 'monitoring/RuntimeMonitoring.sh', 'post_script': None}}
+[['test_name', <class 'str'>], 'image_process_test']
+[['blocking_cli', <class 'bool'>], False]
+Action is: matmult
+Action is: encryption
+Action is: mobilenet
+Action is: linpack
+
+Experiment Details:
+-------------------
+CPU: 64
+MEM: 2048
+
+Experiment Begins:
+------------------
+Image: 4.6M-Darvasa.jpg
+"latency": 2.1579339504241943
+latency: 2.1579339504241943
+max_mem: 288837632
+"latency": 1.98687744140625
+latency: 1.98687744140625
+max_mem: 288837632
+"latency": 1.9961817264556885
+latency: 1.9961817264556885
+max_mem: 288837632
+"latency": 2.0777010917663574
+latency: 2.0777010917663574
+max_mem: 288837632
+"latency": 2.0640218257904053
+latency: 2.0640218257904053
+max_mem: 288837632
+"latency": 2.0450022220611572
+latency: 2.0450022220611572
+max_mem: 288837632
+"latency": 2.0384438037872314
+latency: 2.0384438037872314
+max_mem: 288837632
+"latency": 2.075186252593994
+latency: 2.075186252593994
+max_mem: 288837632
+"latency": 2.0541062355041504
+latency: 2.0541062355041504
+max_mem: 288837632
+"latency": 2.037945508956909
+latency: 2.037945508956909
+max_mem: 288837632
+d306ae0359d6
+5090d1cc5223
+9defb0bccd26
+79375e962454
+2cdeebfc51a4
+92c8b5d908f1
+155d54d15c86
+d3020846f5dd
+ce9c30d1c687
+e12ef9fd86a7
+7f275bb66203

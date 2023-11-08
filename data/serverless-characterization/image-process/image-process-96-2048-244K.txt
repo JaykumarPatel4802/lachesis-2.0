@@ -1,0 +1,63 @@
+Experiment Setup:
+-----------------
+ok: updated action image-process
+Log file -> logs/SWI.log
+{'test_name': 'image_process_test', 'test_duration_in_seconds': 100, 'random_seed': 100, 'blocking_cli': False, 'endpoint': 'local_openwhisk', 'instances': {'instance1': {'application': 'matmult', 'distribution': 'Poisson', 'rate': 0.1}, 'instance2': {'application': 'encryption', 'distribution': 'Uniform', 'rate': 0.1}, 'instance3': {'application': 'mobilenet', 'distribution': 'Uniform', 'rate': 0.1}, 'instance4': {'application': 'linpack', 'distribution': 'Uniform', 'rate': 0.1}}, 'perf_monitoring': {'runtime_script': 'monitoring/RuntimeMonitoring.sh', 'post_script': None}}
+[['test_name', <class 'str'>], 'image_process_test']
+[['blocking_cli', <class 'bool'>], False]
+Action is: matmult
+Action is: encryption
+Action is: mobilenet
+Action is: linpack
+
+Experiment Details:
+-------------------
+CPU: 96
+MEM: 2048
+
+Experiment Begins:
+------------------
+Image: 244K-water.jpg
+"latency": 0.2951209545135498
+latency: 0.2951209545135498
+max_mem: 86384640
+"latency": 0.2749168872833252
+latency: 0.2749168872833252
+max_mem: 86384640
+"latency": 0.26641106605529785
+latency: 0.26641106605529785
+max_mem: 86384640
+"latency": 0.2817263603210449
+latency: 0.2817263603210449
+max_mem: 86384640
+"latency": 0.2850761413574219
+latency: 0.2850761413574219
+max_mem: 86384640
+"latency": 0.2873387336730957
+latency: 0.2873387336730957
+max_mem: 86384640
+"latency": 0.28457140922546387
+latency: 0.28457140922546387
+max_mem: 86384640
+"latency": 0.28179001808166504
+latency: 0.28179001808166504
+max_mem: 86384640
+"latency": 0.281325101852417
+latency: 0.281325101852417
+max_mem: 86384640
+"latency": 0.2857797145843506
+latency: 0.2857797145843506
+max_mem: 86384640
+0d209635cbbb
+a29c975ed60b
+3e93278ac45f
+352c30aff59e
+1fbed62e955c
+6b6f6ef69637
+1ec562121a1c
+04b0810d9696
+b8fbfb2a13cb
+c0094be116de
+de4d4ee67357
+294538d62a0b
+a5b0b065794b

@@ -1,0 +1,67 @@
+Experiment Setup:
+-----------------
+ok: updated action image-process
+Log file -> logs/SWI.log
+{'test_name': 'image_process_test', 'test_duration_in_seconds': 100, 'random_seed': 100, 'blocking_cli': False, 'endpoint': 'local_openwhisk', 'instances': {'instance1': {'application': 'matmult', 'distribution': 'Poisson', 'rate': 0.1}, 'instance2': {'application': 'encryption', 'distribution': 'Uniform', 'rate': 0.1}, 'instance3': {'application': 'mobilenet', 'distribution': 'Uniform', 'rate': 0.1}, 'instance4': {'application': 'linpack', 'distribution': 'Uniform', 'rate': 0.1}}, 'perf_monitoring': {'runtime_script': 'monitoring/RuntimeMonitoring.sh', 'post_script': None}}
+[['test_name', <class 'str'>], 'image_process_test']
+[['blocking_cli', <class 'bool'>], False]
+Action is: matmult
+Action is: encryption
+Action is: mobilenet
+Action is: linpack
+
+Experiment Details:
+-------------------
+CPU: 16
+MEM: 2048
+
+Experiment Begins:
+------------------
+Image: 756K-tomcat3.jpg
+"latency": 0.5898797512054443
+latency: 0.5898797512054443
+max_mem: 115503104
+"latency": 0.5698380470275879
+latency: 0.5698380470275879
+max_mem: 115503104
+"latency": 0.5651261806488037
+latency: 0.5651261806488037
+max_mem: 115503104
+"latency": 0.5422077178955078
+latency: 0.5422077178955078
+max_mem: 115503104
+"latency": 0.6016082763671875
+latency: 0.6016082763671875
+max_mem: 115503104
+"latency": 0.5629291534423828
+latency: 0.5629291534423828
+max_mem: 115503104
+"latency": 0.5734822750091553
+latency: 0.5734822750091553
+max_mem: 115503104
+"latency": 0.5673103332519531
+latency: 0.5673103332519531
+max_mem: 115503104
+"latency": 0.5726287364959717
+latency: 0.5726287364959717
+max_mem: 115503104
+"latency": 0.5608322620391846
+latency: 0.5608322620391846
+max_mem: 115503104
+b7e2471f551a
+b569bec112ab
+6fac0711c777
+738e636d782c
+89295d4439a8
+931f4e40ba66
+fafed77fce7d
+e41622346c47
+6d65d1c7d61b
+7ab6dc2896e5
+05837d8c26b8
+9286872c11c5
+c88d718ce3d7
+e58e4298e57d
+bb0ff524b765
+db237fabbf8c
+9adf0448a103

@@ -1,0 +1,48 @@
+syntax = "proto3";
+package lachesis;
+
+message RegisterRequest {
+    string function = 1;
+    string function_path = 2;
+    repeated string function_metadata = 3;
+    repeated string parameters = 4;
+}
+
+message InvokeRequest {
+    string function = 1;
+    double slo = 2;
+    repeated string parameters = 3;
+}
+
+message DeleteRequest {
+    string function = 1;
+}
+
+message InsertFunctionDataRequest {
+    int32 pk = 1;
+    string function = 2;
+    string start_time = 3;
+    string end_time = 4;
+    double duration = 5;
+    double cold_start_latency = 6;
+    double p90_cpu = 7;
+    double p95_cpu = 8;
+    double p99_cpu = 9;
+    double max_cpu = 10;
+    double max_mem = 11;
+    string invoker_ip = 12;
+    string invoker_name = 13;
+    string activation_id = 14;
+}
+
+message Reply {
+    string status = 1;
+    string message = 2;
+}
+
+service Lachesis {
+    rpc Register(RegisterRequest) returns (Reply) {}
+    rpc Invoke(InvokeRequest) returns (Reply) {}
+    rpc Delete(DeleteRequest) returns (Reply) {}
+    rpc InsertFunctionData(InsertFunctionDataRequest) returns (Reply) {}
+}

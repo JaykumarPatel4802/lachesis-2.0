@@ -1,0 +1,5 @@
+file_name,file_size,no_col,no_row,duration
+10M-reviews.csv,10413232,10,20000,15365.0
+50M-reviews.csv,50594786,10,94742,105881.0
+20M-reviews.csv,19765538,10,37896,47935.0
+100M-reviews.csv,101824974,10,189484,208818.0
