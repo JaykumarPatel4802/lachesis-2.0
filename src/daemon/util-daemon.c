@@ -53,10 +53,12 @@ long double readValueFromFile(const char *filename) {
 // Function to process a container
 void processContainer(const char *containerName, sqlite3 *db) {
 
+    // 1. Check if the container is one of the initial containers before running any invocation
     if (isInitContainer(containerName)) {
         return;
     }
-    
+
+    // 2. Get memory utilization
     char memory_path[1024];
     sprintf(memory_path, "/sys/fs/cgroup/memory/docker/%s", containerName);
 
@@ -71,7 +73,6 @@ void processContainer(const char *containerName, sqlite3 *db) {
     long double memory_usage = readValueFromFile(memory_usage_path);
     int total_inactive_file = 0;
 
-    // Read total_inactive_file from memory.stat
     FILE *memory_inactive_file = fopen(memory_inactive_path, "r");
     if (memory_inactive_file != NULL) {
         char line[128];
@@ -86,7 +87,7 @@ void processContainer(const char *containerName, sqlite3 *db) {
 
     int memory_util = (memory_usage > total_inactive_file) ? ((memory_usage - total_inactive_file) / (1024 * 1024)) : 0;
 
-    // Add code to collect CPU information
+    // 3. Get CPU utilization
     char cpu_path[1024];
     sprintf(cpu_path, "/sys/fs/cgroup/cpu/docker/%s", containerName);
 
@@ -113,19 +114,53 @@ void processContainer(const char *containerName, sqlite3 *db) {
         fclose(usage_percpu_file);
     }
 
-    // Open /proc/stat and read only the first line
     FILE *proc_stat_file = fopen("/proc/stat", "r");
     long double curr_system_usage = 0.0;
     if (proc_stat_file != NULL) {
         char line[128];
         if (fgets(line, sizeof(line), proc_stat_file)) {
-            // Read and sum the 7 integer values on the first line
             long long user, nice, system, idle, iowait, irq, softirq;
             sscanf(line, "cpu %lld %lld %lld %lld %lld %lld %lld", &user, &nice, &system, &idle, &iowait, &irq, &softirq);
             curr_system_usage = (user + nice + system + idle + iowait + irq + softirq) / 100.0;
         }
         fclose(proc_stat_file);
     }
+    
+    // 4. Get network utilization
+    // char container_pid_path[1024];
+    // sprintf(container_pid_path, "/sys/fs/cgroup/memory/docker/%s/cgroup.procs", containerName);
+    // FILE *container_pid_file = fopen(container_pid_path, "r");
+    // if (container_pid_file == NULL) {
+    //     perror("Error opening container PID file");
+    //     return;
+    // }
+
+    // pid_t container_pid;
+    // fscanf(container_pid_file, "%d", &container_pid);
+    // fclose(container_pid_file);
+
+    // char net_dev_path[1024];
+    // sprintf(net_dev_path, "/proc/%d/net/dev", container_pid);
+
+    // FILE *net_dev_file = fopen(net_dev_path, "r");
+    // if (net_dev_file == NULL) {
+    //     perror("Error opening net/dev file");
+    //     return;
+    // }
+
+    // char line[2048];
+    // // Skip the first two lines (header lines) in net/dev
+    // fgets(line, sizeof(line), net_dev_file);
+    // fgets(line, sizeof(line), net_dev_file);
+
+    // // Read the eth0 line and get the bytes received and transmitted
+    // fgets(line, sizeof(line), net_dev_file);
+    // long long bytes_received, bytes_transmitted;
+    // sscanf(line, "%*s %lld %*s %*s %*s %*s %*s %*s %*s %lld", &bytes_received, &bytes_transmitted);
+    // fclose(net_dev_file);
+
+    // printf("Bytes received %lld: \n", bytes_received);
+    // printf("Bytes transmitted %lld: \n\n", bytes_transmitted);
 
     // Insert data into the SQLite table
     char insertSQL[1024];

@@ -9,7 +9,7 @@ import grpc
 import argparse
 import glob
 
-from generated import lachesis_pb2_grpc, lachesis_pb2
+from generated import lachesis_pb2_grpc, lachesis_pb2, cypress_pb2_grpc, cypress_pb2
 
 # Function to parse and insert data into the database
 def insert_execution_data(log_line, cold_start_tid, cold_start_latency, db_conn, cursor):
@@ -31,7 +31,7 @@ def insert_execution_data(log_line, cold_start_tid, cold_start_latency, db_conn,
         inputs = split_line[17][2:-2].split(',')
         activation_id = inputs[0].split(':')[1]
 
-    # Get primary key for fxn_exec_data table in Lachesis controller
+    # Get primary key for fxn_exec_data table in Central controller
     pk = -1
     if len(split_line) > 12:
         inputs = split_line[13][2:-2].split(',')
@@ -166,7 +166,7 @@ def monitor_queue(data_queue):
                     # Calculate the maximum memory usage
                     max_memory_usage = max(mem_utils)
                     # print(f'Obtained data for {function} with activation_id {activation_id}')
-                    with grpc.insecure_channel(LACHESIS_CONTROLLER_IP + ':' + LACHESIS_CONTROLLER_PORT) as channel:
+                    with grpc.insecure_channel(CENTRAL_CONTROLLER_IP + ':' + CENTRAL_CONTROLLER_PORT) as channel:
                         stub = lachesis_pb2_grpc.LachesisStub(channel)
                         response = stub.InsertFunctionData(lachesis_pb2.InsertFunctionDataRequest(pk = int(pk),
                                                                                                 function=function,
@@ -187,7 +187,7 @@ def monitor_queue(data_queue):
                 else:
                     # print(f'Could not obtain data for {function} with activation_id {activation_id}')
                     # Make stub call to controller node -- store data in SQLITE database
-                    with grpc.insecure_channel(LACHESIS_CONTROLLER_IP + ':' + LACHESIS_CONTROLLER_PORT) as channel:
+                    with grpc.insecure_channel(CENTRAL_CONTROLLER_IP + ':' + CENTRAL_CONTROLLER_PORT) as channel:
                         stub = lachesis_pb2_grpc.LachesisStub(channel)
                         response = stub.InsertFunctionData(lachesis_pb2.InsertFunctionDataRequest(pk = int(pk),
                                                                                                 function=function,
@@ -213,18 +213,17 @@ def monitor_queue(data_queue):
 if __name__=='__main__':
     
     # Argument parsing
-    parser = argparse.ArgumentParser(description='Script to monitor and process log data.')
-    parser.add_argument('--controller-ip', dest='controller_ip', default='10.52.3.142', help='Lachesis controller IP')
-    parser.add_argument('--controller-port', dest='controller_port', default='50051', help='Lachesis controller port')
+    parser = argparse.ArgumentParser(description='Daemon to monitor and process log data.')
+    parser.add_argument('--controller-ip', dest='controller_ip', default='10.52.3.142', help='central controller IP')
+    parser.add_argument('--controller-port', dest='controller_port', default='50051', help='central controller port')
     parser.add_argument('--invoker-ip', dest='invoker_ip', default='129.114.108.158', help='Invoker IP')
     parser.add_argument('--invoker-name', dest='invoker_name', default='w1', help='Invoker name')
     args = parser.parse_args()
 
-    LACHESIS_CONTROLLER_IP = args.controller_ip
-    LACHESIS_CONTROLLER_PORT = args.controller_port
+    CENTRAL_CONTROLLER_IP = args.controller_ip
+    CENTRAL_CONTROLLER_PORT = args.controller_port
     INVOKER_IP = args.invoker_ip
     INVOKER_NAME = args.invoker_name
-
 
     try:
         db_conn_main = sqlite3.connect('invoker_data.db', isolation_level=None)

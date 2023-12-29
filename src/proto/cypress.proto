@@ -13,6 +13,7 @@ message InvokeRequest {
     double slo = 2;
     repeated string parameters = 3;
     double batch_size = 4;
+    string exp_version = 5;
 }
 
 message InsertFunctionDataRequest {

@@ -12,6 +12,8 @@ message InvokeRequest {
     string function = 1;
     double slo = 2;
     repeated string parameters = 3;
+    string exp_version = 4;
+    string system = 5;
 }
 
 message DeleteRequest {

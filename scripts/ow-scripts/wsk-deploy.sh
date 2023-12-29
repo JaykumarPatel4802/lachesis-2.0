@@ -34,3 +34,10 @@ ansible-playbook -i environments/$ENVIRONMENT routemgmt.yml
 # requests.exceptions
 
 # Solution: Change ansible.cfg to use the /usr/bin/python3 interpreter
+
+# 2. postdeploy.yml throwing error below: 
+# An exception occurred during task execution. To see the full traceback, use -vvv. 
+# The error was: ansible.errors.AnsibleUndefinedVariable: {'protocol': "{{ scheduler_protocol | default('http') }}", 'dir': {'become':
+# Solution: ignore, not needed
+
+# https://github.com/docker/docker-py/issues/3113

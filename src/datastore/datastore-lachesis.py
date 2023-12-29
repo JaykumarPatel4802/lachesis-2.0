@@ -179,10 +179,13 @@ def delete_specific_exp(exp):
 
 if __name__=='__main__':
     create_tables()
-    view_fxn_exec_table()
+    # view_fxn_exec_table()
     # print()
-    view_pred_models()
+    # view_pred_models()
     # clear_fxn_exec_table()
-    # clear_pred_models_table()
+    clear_pred_models_table()
     # delete_table('pred_models')
-    # delete_specific_exp('exp_33_slo_0.4_quantile_50_invoker_mem_125gb_cpu_90_cold_start_scheduler_background_custom_mem_rps_2')
+    # delete_specific_exp('lachesis-azure-rps-2')
+    # delete_specific_exp('lachesis-azure-rps-4')
+    # delete_specific_exp('lachesis-azure-rps-6')
+    # delete_specific_exp('lachesis-packing-type-azure-quantile-0.9-slo-0.4-rps-2')
