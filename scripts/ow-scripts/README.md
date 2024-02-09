@@ -3,8 +3,8 @@
 These scripts build and deploy OpenWhisk in multiple Docker containers on a multi-node setup. We successfully ran these scripts on bare metal nodes in the Chameleon cluster on TACC running an Ubuntu 18.04 Bionic Image. 
 
 ## Setting Up OpenWhisk for the First Time
-1. First, set up docker on all machines. Use `install-docker.sh` to do so. I suggest you run each command in the script manually on each node, as you will need to logout/login (line 39 in the script) to ensure that your user is added to the docker group.
-2. Next, install packages that are necessary using `wsk-setup.sh`. This will probably need to be done manually by copying the lines `4-15`. 
+1. First, set up docker on all machines. Use `install-docker.sh` to do so. I suggest you run each command in the script manually on each node, as you will need to logout/login (line `39` in the script) to ensure that your user is added to the docker group.
+2. Next, install packages that are necessary using `wsk-setup.sh`. This will probably need to be done manually by copying the lines `4-21`. 
 3. Clone OpenWhisk manually. Change some of the ansible scripts to set up the distributed OpenWhisk system:
     - Open `openwshisk/ansible/environments/local/hosts.j2.ini` and change everything except the invoker IP to the current machine you're on. This will be your controller.
     - Then change the invoker ip to the second node's IP address. Add any more invoker machines that you might have.
