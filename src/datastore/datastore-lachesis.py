@@ -32,7 +32,8 @@ def create_tables():
                             activation_id TEXT,
                             exp_no TEXT,
                             scheduled_cpu INTEGER,
-                            scheduled_mem INTEGER
+                            scheduled_mem INTEGER,
+                            energy REAL
                         )''')
 
     # Commit the changes and close the database connection
@@ -182,7 +183,7 @@ if __name__=='__main__':
     # view_fxn_exec_table()
     # print()
     # view_pred_models()
-    # clear_fxn_exec_table()
+    clear_fxn_exec_table()
     clear_pred_models_table()
     # delete_table('pred_models')
     # delete_specific_exp('lachesis-azure-rps-2')

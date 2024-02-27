@@ -12,7 +12,7 @@ cd ~/openwhisk-benchmarks/functions/matmult
 CPU=$1
 MEM=$2
 MAT_SIZE=$3
-INVOKER="129.114.108.74"
+INVOKER="129.114.108.163"
 
 # Register matrix multiplication function with our OpenWhisk setup
 echo "Experiment Setup:"

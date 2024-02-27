@@ -22,6 +22,7 @@ worker_ips=($(awk '/w[1-9][0-9]*_ip:/ {print $2}' ../../config.yaml | sed "s/[\"
 worker_names=($(awk '/w[1-9][0-9]*_name:/ {print $2}' ../../config.yaml | sed "s/[\"']//g"))
 worker_usernames=($(awk '/w[1-9][0-9]*_username:/ {print $2}' ../../config.yaml | sed "s/[\"']//g"))
 
+
 UTIL_PIDS=()
 AGG_PIDS=()
 
@@ -61,9 +62,10 @@ copy_daemon_dir() {
     local username="$3"
 
     # Recompile util-daemon
-    gcc ../../src/daemon/util-daemon.c -o ../../src/daemon/util-daemon -lsqlite3
+    gcc -g ../../src/daemon/util-daemon.c -o ../../src/daemon/util-daemon -lsqlite3
 
     # Copy daemon directory to each worker node
+
     scp -r -q ../../src/daemon/ $username@$ip:~
     echo "Copied daemon folder to worker $name"
 
@@ -93,13 +95,17 @@ setup_installations() {
     # Install necessary packages on each worker node
     ssh $username@$ip " pip3 -q install -r ./daemon/requirements.txt "
 
+    ssh $username@$ip " ./daemon/setup-energat.sh "
+
+    ssh $username@$ip " ./daemon/install-grpc.sh "
+
     echo "Installed python packages"
 
     echo "Completed installations on worker $name with ip $ip"
 }
 
 # Function to launch daemons
-launch_daemons() {
+launch_daemons_old() {
     local ip="$1"
     local name="$2"
     local username="$3"
@@ -119,6 +125,36 @@ launch_daemons() {
     echo ""
 }
 
+# Function to launch daemons
+launch_daemons() {
+    local ip="$1"
+    local name="$2"
+    local username="$3"
+
+    # Set up local database on each worker node
+    ssh $username@$ip "tmux new-session -d -s ${name}_db 'cd ~/daemon; python3.10 datastore-daemon.py '"
+    echo "Set up local database on $name in tmux session"
+
+    # Launch utilization daemon in a tmux session with debug
+    # ssh $username@$ip "tmux new-session -d -s ${name}_util 'cd ~/daemon; gdb ./util-daemon'"
+    # echo "Launched util daemon on $name in tmux session with GDB"
+
+    # Launch utilization daemon in a tmux session
+    ssh $username@$ip "tmux new-session -d -s ${name}_util 'cd ~/daemon; ./util-daemon '"
+    echo "Launched util daemon on $name in tmux session"
+
+    # Launch aggregation daemon in a tmux session
+    ssh $username@$ip "tmux new-session -d -s ${name}_agg 'cd ~/daemon; python3.10 aggregator-daemon.py --controller-ip $CONTROLLER_IP --controller-port $CONTROLLER_PORT --invoker-ip $ip --invoker-name $name' "
+    echo "Launched aggregator daemon on $name in tmux session"
+
+    # #Launch energat daemon (run sudo python3.10 __main__.py
+    # ssh $username@$ip "tmux new-session -d -s ${name}_energat 'cd ~/daemon/energat_daemon; sudo python3.10 __main__.py' "
+    # echo "Launched energat daemon on $name in tmux session"
+
+
+}
+
+
 # Cleanup function to remove daemon processes, kill docker containers created, and plot core utilization plot
 cleanup() {
     local ip="$1"
@@ -128,14 +164,16 @@ cleanup() {
     # Kill daemon processes
     ssh $username@$ip " pkill -f ./util-daemon "
     ssh $username@$ip " pkill -f aggregator-daemon.py "
+    ssh $username@$ip " pkill -f __main__.py "
+
     
     # Remove containers that we might've created
     ssh $username@$ip " docker ps | grep psinha25 | cut -d ' ' -f1 | xargs -I {} docker stop -t 1 {} "
 
     # At each invoker, create CPU core utilization graph and copy the graph back to central controller
-    ssh $username@$ip " cd ~/daemon; python3 util-timeline-graph.py --invoker-name $name --system $SYSTEM"
-    scp $username@$ip:~/daemon/*-cpu-util-timeline.png ~/lachesis/study-full-experiments
-    ssh $username@$ip " cd ~/daemon; rm *-cpu-util-timeline.png "
+    # ssh $username@$ip " cd ~/daemon; python3 util-timeline-graph.py --invoker-name $name --system $SYSTEM"
+    # scp $username@$ip:~/daemon/*-cpu-util-timeline.png ~/lachesis/study-full-experiments
+    # ssh $username@$ip " cd ~/daemon; rm *-cpu-util-timeline.png "
 }
 
 if [ "$ACTION" -eq 0 ]; then
@@ -144,7 +182,7 @@ if [ "$ACTION" -eq 0 ]; then
         ip="${worker_ips[i]}"
         name="${worker_names[i]}"
         username="${worker_usernames[i]}"
-
+        echo "Copying daemon directory to worker $name with ip $ip"
         copy_daemon_dir "$ip" "$name" "$username" &
         threadpids+=($!)
     done

@@ -35,6 +35,7 @@ message InsertFunctionDataRequest {
     string invoker_ip = 12;
     string invoker_name = 13;
     string activation_id = 14;
+    double energy = 15;
 }
 
 message Reply {

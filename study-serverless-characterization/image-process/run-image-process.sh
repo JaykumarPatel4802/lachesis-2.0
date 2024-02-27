@@ -12,7 +12,7 @@ cd ~/openwhisk-benchmarks/functions/image-processing
 CPU=$1
 MEM=$2
 FILE_IMAGE=$3
-INVOKER="129.114.108.74"
+INVOKER="129.114.108.163"
 
 # Register image process function with our OpenWhisk setup
 echo "Experiment Setup:"

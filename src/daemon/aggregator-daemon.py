@@ -8,6 +8,7 @@ import numpy as np
 import grpc
 import argparse
 import glob
+from datetime import datetime
 
 from generated import lachesis_pb2_grpc, lachesis_pb2, cypress_pb2_grpc, cypress_pb2
 
@@ -106,6 +107,58 @@ def monitor_start_lines(db_conn, cursor, data_queue):
             elif not log_line:
                 time.sleep(0.1)
 
+def filter_outliers(time_power):
+    power = time_power[: 1]
+    mean_power = np.mean(power)
+    std_power = np.std(power)
+    upper_bound = mean_power + (3 * std_power)
+    lower_bound = mean_power - (3 * std_power)
+    filtered_time_power = time_power[(time_power[:, 1] <= upper_bound) & (time_power[:, 1] >= lower_bound)]
+    
+    return filtered_time_power
+
+def timestamp_to_utc(timestamp_str):
+    timestamp_obj = datetime.strptime(timestamp_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+    return (timestamp_obj - datetime(1970, 1, 1)).total_seconds()
+
+
+def parse_energy(rows):
+    timestamp_list = np.array([row[0] for row in rows])
+    timestamp_list = np.vectorize(timestamp_to_utc)(timestamp_list) # convert timestamp to UTC for energy calculation
+    socket_list = np.array([row[1] for row in rows])
+    durations_sec_list = np.array([row[2] for row in rows])
+    ascribed_pkg_joules_list = np.array([row[3] for row in rows])
+    ascribed_dram_joules_list = np.array([row[4] for row in rows])
+
+    # everytime stamp has 2 entries, for each socket, so combine and condense data here
+    timestamps = timestamp_list[::2]
+    timestamps = timestamps.astype(np.float64)
+    durations = durations_sec_list[::2]
+    pkg_pairs = ascribed_pkg_joules_list.reshape(-1, 2)
+    ascribed_pkg_joules_list = np.sum(pkg_pairs, axis = 1)
+    dram_pairs = ascribed_dram_joules_list.reshape(-1, 2)
+    ascribed_dram_joules_list = np.sum(dram_pairs, axis = 1)
+    energies = ascribed_pkg_joules_list + ascribed_dram_joules_list
+
+    # now timestamps, durations, and total_energies has everything I need to calcualte final energy
+    centered_timestamps = timestamps - (durations / 2)
+    powers = energies / durations
+
+    time_power = np.array(list(zip(centered_timestamps, powers)))
+    filtered_time_power = filter_outliers(time_power)
+    final_timestamps = filtered_time_power[:, 0]
+    final_powers = filtered_time_power[:, 1]
+
+    if len(final_timestamps) == 0:
+        return 0
+    elif len(final_timestamps) == 1:
+        return energies[0]
+
+    final_energy = np.trapz(final_powers, x=final_timestamps)
+
+    return final_energy
+
+
 # Function to monitor the queue and process data
 def monitor_queue(data_queue):
     try:
@@ -124,9 +177,19 @@ def monitor_queue(data_queue):
                             (start_time, end_time, container_id))
                 rows = cursor.fetchall()
 
+                cursor.execute("SELECT timestamp, socket, duration_sec, ascribed_pkg_joules, ascribed_dram_joules from function_energy_utilization_advanced WHERE timestamp BETWEEN ? AND ? and container_id = ?",
+                            (start_time, end_time, container_id))
+                energy_rows = cursor.fetchall()
+
                 # Sometimes we may not capture utilization -- usually because new container was spun up 
+
+                energy = -1
+
                 # for an invocation and completed before thread for that container began collecting util
                 if rows:
+
+                    if energy_rows:
+                        energy = parse_energy(energy_rows)
 
                     # Extract data from the rows
                     cpu_usages = np.array([row[0] for row in rows])
@@ -165,6 +228,9 @@ def monitor_queue(data_queue):
 
                     # Calculate the maximum memory usage
                     max_memory_usage = max(mem_utils)
+                    
+                    print(f"Energy for container: {container_id} is {energy}")
+
                     # print(f'Obtained data for {function} with activation_id {activation_id}')
                     with grpc.insecure_channel(CENTRAL_CONTROLLER_IP + ':' + CENTRAL_CONTROLLER_PORT) as channel:
                         stub = lachesis_pb2_grpc.LachesisStub(channel)
@@ -181,7 +247,8 @@ def monitor_queue(data_queue):
                                                                                                 max_mem=float(max_memory_usage),
                                                                                                 invoker_ip=INVOKER_IP,
                                                                                                 invoker_name=INVOKER_NAME,
-                                                                                                activation_id=activation_id
+                                                                                                activation_id=activation_id,
+                                                                                                energy=float(energy)
                                                                                                 ))
                 # Didn't capture any utilization data unfortunately
                 else:
@@ -202,7 +269,8 @@ def monitor_queue(data_queue):
                                                                                                 max_mem=-2.0,
                                                                                                 invoker_ip=INVOKER_IP,
                                                                                                 invoker_name=INVOKER_NAME,
-                                                                                                activation_id=activation_id
+                                                                                                activation_id=activation_id,
+                                                                                                energy=float(energy)
                                                                                                 ))
                 data_queue.task_done()
             except queue.Empty:
@@ -214,9 +282,9 @@ if __name__=='__main__':
     
     # Argument parsing
     parser = argparse.ArgumentParser(description='Daemon to monitor and process log data.')
-    parser.add_argument('--controller-ip', dest='controller_ip', default='10.52.3.142', help='central controller IP')
+    parser.add_argument('--controller-ip', dest='controller_ip', default='129.114.108.12', help='central controller IP')
     parser.add_argument('--controller-port', dest='controller_port', default='50051', help='central controller port')
-    parser.add_argument('--invoker-ip', dest='invoker_ip', default='129.114.108.158', help='Invoker IP')
+    parser.add_argument('--invoker-ip', dest='invoker_ip', default='129.114.108.163', help='Invoker IP')
     parser.add_argument('--invoker-name', dest='invoker_name', default='w1', help='Invoker name')
     args = parser.parse_args()
 
