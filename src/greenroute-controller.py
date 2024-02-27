@@ -45,10 +45,10 @@ class Lachesis(lachesis_pb2_grpc.LachesisServicer):
         if row:
             slo, cpu_limit, mem_limit, inputs = row[0], row[1], row[2], json.loads(row[3])
         
-        p90_cpu_used = min(cpu_limit, request.p90_cpu / 100) # convert 90th percentile from percentage to number of cores
-        p95_cpu_used = min(cpu_limit, request.p95_cpu / 100) # convert 95th percentile from percentage to number of cores
-        p99_cpu_used = min(cpu_limit, request.p99_cpu / 100) # convert 99th percentile from percentage to number of cores
-        max_cpu_used = min(cpu_limit, request.max_cpu / 100) # convert max cpu from percentage to number of cores
+        p90_cpu_used = max(cpu_limit, request.p90_cpu / 100) # convert 90th percentile from percentage to number of cores
+        p95_cpu_used = max(cpu_limit, request.p95_cpu / 100) # convert 95th percentile from percentage to number of cores
+        p99_cpu_used = max(cpu_limit, request.p99_cpu / 100) # convert 99th percentile from percentage to number of cores
+        max_cpu_used = max(cpu_limit, request.max_cpu / 100) # convert max cpu from percentage to number of cores
         max_mem_used = int(request.max_mem) # convert max mem from percentage to MB 
 
         function_name_breakdown = request.function.split('_')
