@@ -311,13 +311,14 @@ def test_linpack():
         for i in range(0, len(df)):
             for frequency in range(FREQUENCY_MIN, FREQUENCY_MAX + FREQUENCY_INT, FREQUENCY_INT):
                 # handle frequency change
+                changeInvokerFrequency(frequency)
                 for cpu in range(1, CPU_MAX + 1):
                     for _ in range(3):
                         selected_row = df.iloc[i]
                         parameter_list = [str(selected_row['matrix_size'])]
                         slo = float(selected_row['duration']) * (1 + SLO_MULTIPLIER)
 
-                        response, pk = stub.Invoke(lachesis_pb2.InvokeRequest(function='linpack', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY))
+                        response, pk = stub.Invoke(lachesis_pb2.InvokeRequest(function='linpack', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY, frequency=frequency))
                         print(f'Response for function linpack: {response}')
                         # check if function invocation is completed
                         waitForInvocationCompletion(pk, cursor)
@@ -338,7 +339,8 @@ def test_floatmatmult():
         
         for i in range(0, len(df)):
             for frequency in range(FREQUENCY_MIN, FREQUENCY_MAX + FREQUENCY_INT, FREQUENCY_INT):
-            # handle frequency change
+                # handle frequency change
+                changeInvokerFrequency(frequency)
                 for cpu in range(1, CPU_MAX + 1):
                     for _ in range(3):
                         selected_row = df.iloc[i]
@@ -347,7 +349,7 @@ def test_floatmatmult():
                         parameter_list.append(selected_row['file_name'])
                         slo = float(selected_row['duration']) * (1 + SLO_MULTIPLIER)
 
-                        response, pk = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY))
+                        response, pk = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY, frequency=frequency))
                         print(f'Resposne for function floatmatmult: {response}')
                         # check if function invocation is completed
                         waitForInvocationCompletion(pk, cursor)
@@ -367,19 +369,19 @@ def test_image_process():
         for i in range(0, len(df)):
             for frequency in range(FREQUENCY_MIN, FREQUENCY_MAX + FREQUENCY_INT, FREQUENCY_INT):
                 # handle frequency change
+                changeInvokerFrequency(frequency)
                 for cpu in range(1, CPU_MAX + 1):
                     for _ in range(3):
                         selected_row = df.iloc[i]
                         parameter_list = [str(selected_row['file_name'])]
-                        slo = int(selected_row['slo'])
+                        slo = float(selected_row['duration']) * (1 + SLO_MULTIPLIER)
 
-                        response, pk = stub.Invoke(lachesis_pb2.InvokeRequest(function='imageprocess', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY))
+                        response, pk = stub.Invoke(lachesis_pb2.InvokeRequest(function='imageprocess', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY, frequency=frequency))
                         print(f'Response for function imageprocess: {response}')
                         # check if function invocation is completed
                         waitForInvocationCompletion(pk, cursor)
     db_conn.close()
     print('Completed imageprocess invocations')
-
 
 def test_encrypt():
     df = feature_dict['encrypt']
@@ -394,18 +396,46 @@ def test_encrypt():
         for i in range(0, len(df)):
             for frequency in range(FREQUENCY_MIN, FREQUENCY_MAX + FREQUENCY_INT, FREQUENCY_INT):
                 # handle frequency change
+                changeInvokerFrequency(frequency)
                 for cpu in range(1, CPU_MAX + 1):
                     for _ in range(3):
                         selected_row = df.iloc[i]
                         parameter_list = [str(selected_row['length']), str(selected_row['iterations'])]
                         slo = float(selected_row['duration']) * (1 + SLO_MULTIPLIER)
                         
-                        response, pk = stub.Invoke(lachesis_pb2.InvokeRequest(function='encrypt', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY))
+                        response, pk = stub.Invoke(lachesis_pb2.InvokeRequest(function='encrypt', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY, frequency=frequency))
                         print(f'Response for function encrypt: {response}')
                         # check if function invocation is completed
                         waitForInvocationCompletion(pk, cursor)
     db_conn.close()
     print('Completed encrypt invocations')
+
+def test_video_process():
+    df = feature_dict['videoprocess']
+    print(df)
+
+    db_conn = sqlite3.connect(CONTROLLER_DB)
+    cursor = db_conn.cursor()
+
+    with grpc.insecure_channel('localhost:50051') as channel:
+        stub = lachesis_pb2_grpc.LachesisStub(channel)
+
+        for i in range(0, len(df)):
+            for frequency in range(FREQUENCY_MIN, FREQUENCY_MAX + FREQUENCY_INT, FREQUENCY_INT):
+                # handle frequency change
+                changeInvokerFrequency(frequency)
+                for cpu in range(1, CPU_MAX + 1):
+                    for _ in range(3):
+                        selected_row = df.iloc[i]
+                        parameter_list = [str(selected_row['file_name'])]
+                        slo = float(selected_row['duration']) * (1 + SLO_MULTIPLIER)    # this might be duration of video, ask Prasoon
+
+                        response, pk = stub.Invoke(lachesis_pb2.InvokeRequest(function='videoprocess', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY, frequency=frequency))
+                        print(f'Response for function imageprocess: {response}')
+                        # check if function invocation is completed
+                        waitForInvocationCompletion(pk, cursor)
+    db_conn.close()
+    print('Completed imageprocess invocations')
 
 if __name__=='__main__':
     # register_functions()

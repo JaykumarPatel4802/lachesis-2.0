@@ -33,7 +33,8 @@ def create_tables():
                             exp_no TEXT,
                             scheduled_cpu INTEGER,
                             scheduled_mem INTEGER,
-                            energy REAL
+                            energy REAL,
+                            frequency REAL
                         )''')
 
     # Commit the changes and close the database connection
@@ -179,6 +180,7 @@ def delete_specific_exp(exp):
 
 
 if __name__=='__main__':
+    # delete_table('fxn_exec_data')
     create_tables()
     # view_fxn_exec_table()
     # print()

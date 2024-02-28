@@ -132,8 +132,8 @@ class Lachesis(lachesis_pb2_grpc.LachesisServicer):
         mem_assigned = request.memory
         
         # Insert invocation data into database, begin executing, and update activation id in database!
-        cursor.execute('INSERT INTO fxn_exec_data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                        (request.function, lachesis_start, 'NA', 'NA', 'NA', -1.0, -1.0, request.slo, json.dumps(list(request.parameters)), cpu_assigned, mem_assigned, cpu_data, memory_mb, -1.0, -1.0, -1.0, -1.0, -1.0, 'NA', 'NA', 'NA', request.exp_version, -1, -1, -1))
+        cursor.execute('INSERT INTO fxn_exec_data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                        (request.function, lachesis_start, 'NA', 'NA', 'NA', -1.0, -1.0, request.slo, json.dumps(list(request.parameters)), cpu_assigned, mem_assigned, cpu_data, memory_mb, -1.0, -1.0, -1.0, -1.0, -1.0, 'NA', 'NA', 'NA', request.exp_version, -1, -1, -1, request.frequency))
         pk = cursor.lastrowid
         activation_id = self.__launch_ow(cpu_assigned, mem_assigned, pk, request.function, request.parameters)
         cursor.execute('UPDATE fxn_exec_data SET activation_id = ? WHERE rowid = ?', (activation_id, pk))
@@ -172,10 +172,10 @@ class Lachesis(lachesis_pb2_grpc.LachesisServicer):
         if row:
             slo, cpu_limit, mem_limit, inputs = row[0], row[1], row[2], json.loads(row[3])
 
-        p90_cpu_used = min(cpu_limit, request.p90_cpu / 100)
-        p95_cpu_used = min(cpu_limit, request.p95_cpu / 100)
-        p99_cpu_used = min(cpu_limit, request.p99_cpu / 100)
-        max_cpu_used = min(cpu_limit, request.max_cpu / 100)
+        p90_cpu_used = max(cpu_limit, request.p90_cpu / 100)
+        p95_cpu_used = max(cpu_limit, request.p95_cpu / 100)
+        p99_cpu_used = max(cpu_limit, request.p99_cpu / 100)
+        max_cpu_used = max(cpu_limit, request.max_cpu / 100)
         max_mem_used = int(request.max_mem)
         
         function_name_breakdown = request.function.split('_')
