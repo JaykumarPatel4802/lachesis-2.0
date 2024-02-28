@@ -58,6 +58,9 @@ SLO_MULTIPLIER = 0.4 # originally 0.4
 
 CONTROLLER_DB = './datastore/lachesis-controller.db'
 
+INVOKER_USERNAME = "cc"
+INVOKER_IP = "129.114.108.87"
+
 '''
 Plotting Functions
 # '''
@@ -283,7 +286,19 @@ def run_experiment():
             time.sleep(max(0, 0.5 - elapsed_time % 0.5))
 
 def changeInvokerFrequency(frequency):
-    pass
+    command = f'sudo /path/to/script.sh {frequency}'
+
+    ssh_command = f"ssh {INVOKER_USERNAME}@{INVOKER_IP} '{command}'"
+    process = subprocess.Popen(ssh_command, shell=True, executable='/bin/bash', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    if process.returncode == 0:
+        print(f'Invoker frequency changed to {frequency}')
+        return True
+    else:
+        print(f'Error changing invoker frequency to {frequency}')
+        print(stdout)
+        print(stderr)
+        return False
 
 def waitForInvocationCompletion(pk, cursor):
     while(True):
@@ -311,8 +326,10 @@ def test_linpack():
         for i in range(0, len(df)):
             for frequency in range(FREQUENCY_MIN, FREQUENCY_MAX + FREQUENCY_INT, FREQUENCY_INT):
                 # handle frequency change
-                changeInvokerFrequency(frequency)
+                success = changeInvokerFrequency(frequency)
+                assert(success)
                 for cpu in range(1, CPU_MAX + 1):
+                    print(f"Running linpack with frequency: {frequency}, cpu: {cpu}, df_row: {i}, memory: {CONST_MEMORY}")
                     for _ in range(3):
                         selected_row = df.iloc[i]
                         parameter_list = [str(selected_row['matrix_size'])]
@@ -340,8 +357,10 @@ def test_floatmatmult():
         for i in range(0, len(df)):
             for frequency in range(FREQUENCY_MIN, FREQUENCY_MAX + FREQUENCY_INT, FREQUENCY_INT):
                 # handle frequency change
-                changeInvokerFrequency(frequency)
+                success = changeInvokerFrequency(frequency)
+                assert(success)
                 for cpu in range(1, CPU_MAX + 1):
+                    print(f"Running floatmatmult with frequency: {frequency}, cpu: {cpu}, df_row: {i}, memory: {CONST_MEMORY}")
                     for _ in range(3):
                         selected_row = df.iloc[i]
                         parameter_list = []
@@ -369,8 +388,10 @@ def test_image_process():
         for i in range(0, len(df)):
             for frequency in range(FREQUENCY_MIN, FREQUENCY_MAX + FREQUENCY_INT, FREQUENCY_INT):
                 # handle frequency change
-                changeInvokerFrequency(frequency)
+                success = changeInvokerFrequency(frequency)
+                assert(success)
                 for cpu in range(1, CPU_MAX + 1):
+                    print(f"Running imageprocess with frequency: {frequency}, cpu: {cpu}, df_row: {i}, memory: {CONST_MEMORY}")
                     for _ in range(3):
                         selected_row = df.iloc[i]
                         parameter_list = [str(selected_row['file_name'])]
@@ -396,8 +417,10 @@ def test_encrypt():
         for i in range(0, len(df)):
             for frequency in range(FREQUENCY_MIN, FREQUENCY_MAX + FREQUENCY_INT, FREQUENCY_INT):
                 # handle frequency change
-                changeInvokerFrequency(frequency)
+                success = changeInvokerFrequency(frequency)
+                assert(success)
                 for cpu in range(1, CPU_MAX + 1):
+                    print(f"Running encrypt with frequency: {frequency}, cpu: {cpu}, df_row: {i}, memory: {CONST_MEMORY}")
                     for _ in range(3):
                         selected_row = df.iloc[i]
                         parameter_list = [str(selected_row['length']), str(selected_row['iterations'])]
@@ -423,8 +446,10 @@ def test_video_process():
         for i in range(0, len(df)):
             for frequency in range(FREQUENCY_MIN, FREQUENCY_MAX + FREQUENCY_INT, FREQUENCY_INT):
                 # handle frequency change
-                changeInvokerFrequency(frequency)
+                success = changeInvokerFrequency(frequency)
+                assert(success)
                 for cpu in range(1, CPU_MAX + 1):
+                    print(f"Running videoprocess with frequency: {frequency}, cpu: {cpu}, df_row: {i}, memory: {CONST_MEMORY}")
                     for _ in range(3):
                         selected_row = df.iloc[i]
                         parameter_list = [str(selected_row['file_name'])]
