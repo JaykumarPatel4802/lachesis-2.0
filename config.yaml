@@ -1,9 +1,9 @@
 ---
 controller:
-  controller_ip: '129.114.108.12'
+  controller_ip: '129.114.109.133'
   controller_port: '50051'
   controller_username: 'cc'
 workers:
-  w1_ip: '129.114.108.163'
+  w1_ip: '129.114.108.87'
   w1_name: 'w1'
   w1_username: 'cc'

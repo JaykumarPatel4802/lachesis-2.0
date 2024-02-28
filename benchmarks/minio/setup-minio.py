@@ -50,76 +50,76 @@ else:
     print("Bucket '%s' already exists" %bucket_name)
 
 # Images
-# for img in os.listdir(str(image_dir)):
-#     img_path = image_dir / img
-#     print(img_path)
-#     minio_client.fput_object(bucket_name=bucket_name,
-#                        object_name=img,
-#                        file_path=str(img_path))
+for img in os.listdir(str(image_dir)):
+    img_path = image_dir / img
+    print(img_path)
+    minio_client.fput_object(bucket_name=bucket_name,
+                       object_name=img,
+                       file_path=str(img_path))
 
-# # Sentiment
-# for sentence in os.listdir(str(sentiment_dir)):
-#     if "json" in sentence:
-#         sentence_path = sentiment_dir / sentence
-#         print(sentence_path)
-#         minio_client.fput_object(bucket_name=bucket_name,
-#                              object_name=sentence,
-#                              file_path=str(sentence_path))
+# Sentiment
+for sentence in os.listdir(str(sentiment_dir)):
+    if "json" in sentence:
+        sentence_path = sentiment_dir / sentence
+        print(sentence_path)
+        minio_client.fput_object(bucket_name=bucket_name,
+                             object_name=sentence,
+                             file_path=str(sentence_path))
 
-# # Video
-# for vid in os.listdir(str(video_dir)):
-#     vid_path = video_dir / vid
-#     print(vid_path)
-#     minio_client.fput_object(bucket_name=bucket_name,
-#                        object_name=vid,
-#                        file_path=str(vid_path))
+# Video
+for vid in os.listdir(str(video_dir)):
+    vid_path = video_dir / vid
+    print(vid_path)
+    minio_client.fput_object(bucket_name=bucket_name,
+                       object_name=vid,
+                       file_path=str(vid_path))
 
-# # Logistic Regression
-# for file in os.listdir(str(lr_dir)):
-#     file_path = lr_dir / file
-#     print(file_path)
-#     minio_client.fput_object(bucket_name=bucket_name,
-#                     object_name=file,
-#                     file_path=str(file_path))
+# Logistic Regression
+for file in os.listdir(str(lr_dir)):
+    file_path = lr_dir / file
+    print(file_path)
+    minio_client.fput_object(bucket_name=bucket_name,
+                    object_name=file,
+                    file_path=str(file_path))
 
-# # Speech2Text
-# for audio in os.listdir(str(audio_dir)):
-#     audio_path = audio_dir / audio
-#     print(audio_path)
-#     minio_client.fput_object(bucket_name=bucket_name,
-#                     object_name=audio,
-#                     file_path=str(audio_path))
+# Speech2Text
+for audio in os.listdir(str(audio_dir)):
+    audio_path = audio_dir / audio
+    print(audio_path)
+    minio_client.fput_object(bucket_name=bucket_name,
+                    object_name=audio,
+                    file_path=str(audio_path))
 
-# # Linpack
-# for matrix in os.listdir(str(linpack_dir)):
-#     linpack_path = linpack_dir / matrix
-#     print(linpack_path)
-#     minio_client.fput_object(bucket_name=bucket_name,
-#                              object_name=matrix,
-#                              file_path=str(linpack_path))
+# Linpack
+for matrix in os.listdir(str(linpack_dir)):
+    linpack_path = linpack_dir / matrix
+    print(linpack_path)
+    minio_client.fput_object(bucket_name=bucket_name,
+                             object_name=matrix,
+                             file_path=str(linpack_path))
 
 
 # Float matrix multiply
-# for matrix in os.listdir(str(mat_dir)):
-#     matrix_path = mat_dir / matrix
-#     print(matrix_path)
-#     minio_client.fput_object(bucket_name=bucket_name,
-#                              object_name=matrix,
-#                              file_path=str(matrix_path))
+for matrix in os.listdir(str(mat_dir)):
+    matrix_path = mat_dir / matrix
+    print(matrix_path)
+    minio_client.fput_object(bucket_name=bucket_name,
+                             object_name=matrix,
+                             file_path=str(matrix_path))
 
-# # Resnet-50
-# minio_client.fput_object(bucket_name=bucket_name,
-#                          object_name='saved_model.pb',
-#                          file_path=str(resnet_dir / 'saved_model.pb'))
-# minio_client.fput_object(bucket_name=bucket_name,
-#                          object_name='ImageNetLabels.txt',
-#                          file_path=str(resnet_dir / 'ImageNetLabels.txt'))
-# minio_client.fput_object(bucket_name=bucket_name,
-#                          object_name='variables.index',
-#                          file_path=str(resnet_dir / 'variables/variables.index'))
-# minio_client.fput_object(bucket_name=bucket_name,
-#                          object_name='variables.data-00000-of-00001',
-#                          file_path=str(resnet_dir / 'variables/variables.data-00000-of-00001'))
+# Resnet-50
+minio_client.fput_object(bucket_name=bucket_name,
+                         object_name='saved_model.pb',
+                         file_path=str(resnet_dir / 'saved_model.pb'))
+minio_client.fput_object(bucket_name=bucket_name,
+                         object_name='ImageNetLabels.txt',
+                         file_path=str(resnet_dir / 'ImageNetLabels.txt'))
+minio_client.fput_object(bucket_name=bucket_name,
+                         object_name='variables.index',
+                         file_path=str(resnet_dir / 'variables/variables.index'))
+minio_client.fput_object(bucket_name=bucket_name,
+                         object_name='variables.data-00000-of-00001',
+                         file_path=str(resnet_dir / 'variables/variables.data-00000-of-00001'))
 for img in os.listdir(str(resnet_image_dir)):
     img_path = resnet_image_dir / img
     print(img_path)
