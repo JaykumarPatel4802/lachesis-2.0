@@ -6,6 +6,8 @@ message RegisterRequest {
     string function_path = 2;
     repeated string function_metadata = 3;
     repeated string parameters = 4;
+    int32 memory = 5;
+    int32 cpu = 6;
 }
 
 message InvokeRequest {
@@ -14,6 +16,10 @@ message InvokeRequest {
     repeated string parameters = 3;
     string exp_version = 4;
     string system = 5;
+    int32 memory = 6;
+    int32 cpu = 7;
+    int32 frequency = 8;
+
 }
 
 message DeleteRequest {
@@ -41,6 +47,7 @@ message InsertFunctionDataRequest {
 message Reply {
     string status = 1;
     string message = 2;
+    int32 primary_key = 3;
 }
 
 service Lachesis {

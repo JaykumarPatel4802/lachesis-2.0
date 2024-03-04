@@ -96,6 +96,9 @@ def main():
         EnergyTracer(1).estimate_baseline_power(save=True)
         return 0
 
+    print("Estimating energy")
+    EnergyTracer(1).estimate_baseline_power(save=True)
+
     db_file = "../invoker_data.db"
     try:
         # Open the database

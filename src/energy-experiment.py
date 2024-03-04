@@ -5,17 +5,19 @@ import subprocess
 import json
 import time
 import random
-import seaborn as sns
+# import seaborn as sns
 import sqlite3
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime, timedelta
 from sklearn.linear_model import LinearRegression
 import requests
 import urllib3
 import os
+from enum import Enum
 
 from generated import lachesis_pb2_grpc, lachesis_pb2, cypress_pb2_grpc, cypress_pb2
+
 
 # Used for interacting with OpenWhisk API
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -60,6 +62,14 @@ CONTROLLER_DB = './datastore/lachesis-controller.db'
 
 INVOKER_USERNAME = "cc"
 INVOKER_IP = "129.114.108.87"
+
+class FunctionType(Enum):
+    ALL = 0
+    FLOATMATMULT = 1
+    IMAGEPROCESS = 2
+    VIDEOPROCESS = 3
+    LINPACK = 4
+    ENCRYPT = 5
 
 '''
 Plotting Functions
@@ -161,73 +171,79 @@ Plotting Functions
 '''
 Lachesis Experiment Functions 
 '''
-def register_functions():
+def register_functions(case = FunctionType.ALL):
     with grpc.insecure_channel('localhost:50051') as channel:
         stub = lachesis_pb2_grpc.LachesisStub(channel)
 
+        function_metadata = ['docker:psinha25/main-python']
+        parameters = ['endpoint:\"10.52.3.142:9002\"', 'access_key:\"testkey\"', 'secret_key:\"testsecret\"', 'bucket:\"openwhisk\"']
+
         for cpu in range(1, CPU_MAX + 1):
 
-            # Image Process
-            function_metadata = ['docker:psinha25/main-python']
-            parameters = ['endpoint:\"10.52.3.142:9002\"', 'access_key:\"testkey\"', 'secret_key:\"testsecret\"', 'bucket:\"openwhisk\"']
-            response = stub.Register(lachesis_pb2.RegisterRequest(function='imageprocess', 
-                                                                function_path='~/lachesis/benchmarks/functions/image-processing', 
-                                                                function_metadata=function_metadata, 
-                                                                parameters=parameters,
-                                                                memory=CONST_MEMORY,
-                                                                cpu=cpu))
-            print(response)
+            if (case == FunctionType.ALL) or (case == FunctionType.IMAGEPROCESS):
+                # Image Process
+                response = stub.Register(lachesis_pb2.RegisterRequest(function='imageprocess', 
+                                                                    function_path='~/lachesis-2.0/benchmarks/functions/image-processing', 
+                                                                    function_metadata=function_metadata, 
+                                                                    parameters=parameters,
+                                                                    memory=CONST_MEMORY,
+                                                                    cpu=cpu))
+                print(response)
 
-            # Floatmatmult
-            response = stub.Register(lachesis_pb2.RegisterRequest(function='floatmatmult',
-                                                                function_path='~/lachesis/benchmarks/functions/matmult',
-                                                                function_metadata=function_metadata,
-                                                                parameters=parameters,
-                                                                memory=CONST_MEMORY,
-                                                                cpu=cpu))
-            print(response)
+            if (case == FunctionType.ALL) or (case == FunctionType.FLOATMATMULT):
+                # Floatmatmult
+                response = stub.Register(lachesis_pb2.RegisterRequest(function='floatmatmult',
+                                                                    function_path='~/lachesis-2.0/benchmarks/functions/matmult',
+                                                                    function_metadata=function_metadata,
+                                                                    parameters=parameters,
+                                                                    memory=CONST_MEMORY,
+                                                                    cpu=cpu))
+                print(response)
 
-            # Video Process
-            function_metadata = ['docker:psinha25/video-ow']
-            response = stub.Register(lachesis_pb2.RegisterRequest(function='videoprocess',
-                                                                function_path='~/lachesis/benchmarks/functions/video-processing',
-                                                                function_metadata=function_metadata,
-                                                                parameters=parameters,
-                                                                memory=CONST_MEMORY,
-                                                                cpu=cpu))
-            print(response)
+            if (case == FunctionType.ALL) or (case == FunctionType.VIDEOPROCESS):
+                # Video Process
+                function_metadata = ['docker:psinha25/video-ow']
+                response = stub.Register(lachesis_pb2.RegisterRequest(function='videoprocess',
+                                                                    function_path='~/lachesis-2.0/benchmarks/functions/video-processing',
+                                                                    function_metadata=function_metadata,
+                                                                    parameters=parameters,
+                                                                    memory=CONST_MEMORY,
+                                                                    cpu=cpu))
+                print(response)
 
-            # Linpack
-            function_metadata = ['docker:psinha25/main-python']
-            response = stub.Register(lachesis_pb2.RegisterRequest(function='linpack',
-                                                                function_path='~/lachesis/benchmarks/functions/linpack',
-                                                                function_metadata=function_metadata,
-                                                                parameters=parameters,
-                                                                memory=CONST_MEMORY,
-                                                                cpu=cpu))
-            print(response)
+            if (case == FunctionType.ALL) or (case == FunctionType.LINPACK):
+                # Linpack
+                function_metadata = ['docker:psinha25/main-python']
+                response = stub.Register(lachesis_pb2.RegisterRequest(function='linpack',
+                                                                    function_path='~/lachesis-2.0/benchmarks/functions/linpack',
+                                                                    function_metadata=function_metadata,
+                                                                    parameters=parameters,
+                                                                    memory=CONST_MEMORY,
+                                                                    cpu=cpu))
+                print(response)
 
-            # Encryption
-            function_metadata = ['docker:psinha25/main-python']
-            response = stub.Register(lachesis_pb2.RegisterRequest(function='encrypt',
-                                                                function_path='~/lachesis/benchmarks/functions/encryption',
-                                                                function_metadata=function_metadata,
-                                                                parameters=parameters,
-                                                                memory=CONST_MEMORY,
-                                                                cpu=cpu))
-            print(response)
+            if (case == FunctionType.ALL) or (case == FunctionType.ENCRYPT):
+                # Encryption
+                function_metadata = ['docker:psinha25/main-python']
+                response = stub.Register(lachesis_pb2.RegisterRequest(function='encrypt',
+                                                                    function_path='~/lachesis-2.0/benchmarks/functions/encryption',
+                                                                    function_metadata=function_metadata,
+                                                                    parameters=parameters,
+                                                                    memory=CONST_MEMORY,
+                                                                    cpu=cpu))
+                print(response)
 
 def test_invocations():
     with grpc.insecure_channel('localhost:50051') as channel:
         stub = lachesis_pb2_grpc.LachesisStub(channel)
 
-        # matmult_response = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=15000, parameters=['matrix1_4000_0.7.txt', 'matrix2_4000_0.7.txt']))
+        matmult_response = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=15000, parameters=['matrix1_4000_0.7.txt', 'matrix2_4000_0.7.txt']))
         # image_response = stub.Invoke(lachesis_pb2.InvokeRequest(function='imageprocess', slo=4000, parameters=[feature_dict['imageprocess'].iloc[4]['file_name']]))
         # video_response = stub.Invoke(lachesis_pb2.InvokeRequest(function='videoprocess', slo=10000, parameters=[feature_dict['videoprocess'].iloc[4]['file_name']]))
         # sentiment_response = stub.Invoke(lachesis_pb2.InvokeRequest(function='sentiment', slo=10000, parameters=[feature_dict['sentiment'].iloc[4]['file_name']]))
         # linpack_response = stub.Invoke(lachesis_pb2.InvokeRequest(function='linpack', slo=10000, parameters=['5000']))
         # lrtrain_response = stub.Invoke(lachesis_pb2.InvokeRequest(function='lrtrain', slo=10000, parameters=[feature_dict['lrtrain'].iloc[2]['file_name']]))
-        mobilenet_response = stub.Invoke(lachesis_pb2.InvokeRequest(function='mobilenet', slo=10000, parameters=[feature_dict['mobilenet'].iloc[4]['file_name']]))
+        # mobilenet_response = stub.Invoke(lachesis_pb2.InvokeRequest(function='mobilenet', slo=10000, parameters=[feature_dict['mobilenet'].iloc[4]['file_name']]))
         # encrypt_response = stub.Invoke(lachesis_pb2.InvokeRequest(function='encrypt', slo=150.75, parameters=['10000', '30']))
 
         # matmult_response = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=15000, parameters=['matrix1_4000_0.7.txt', 'matrix2_4000_0.7.txt']))
@@ -238,6 +254,13 @@ def test_invocations():
         # lrtrain_response = stub.Invoke(lachesis_pb2.InvokeRequest(function='lrtrain', slo=10000, parameters=[feature_dict['lrtrain'].iloc[2]['file_name']]))
         # mobilenet_response = stub.Invoke(lachesis_pb2.InvokeRequest(function='mobilenet', slo=10000, parameters=[feature_dict['mobilenet'].iloc[4]['file_name']]))
         # encrypt_response = stub.Invoke(lachesis_pb2.InvokeRequest(function='encrypt', slo=150.75, parameters=['50', '10']))
+
+def test_floatmatmult_invocation():
+    with grpc.insecure_channel('localhost:50051') as channel:
+        stub = lachesis_pb2_grpc.LachesisStub(channel)
+        response = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=(float(13297.5) * (1 + SLO_MULTIPLIER)), parameters=['matrix1_4000_0.7.txt', 'matrix1_4000_0.7.txt'], cpu=4, memory=CONST_MEMORY, frequency=2400000))
+        pk = response.primary_key
+        print(f'PK: {pk},  Resposne for function floatmatmult: {response}')
 
 def run_experiment():
     
@@ -335,9 +358,10 @@ def test_linpack():
                         parameter_list = [str(selected_row['matrix_size'])]
                         slo = float(selected_row['duration']) * (1 + SLO_MULTIPLIER)
 
-                        response, pk = stub.Invoke(lachesis_pb2.InvokeRequest(function='linpack', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY, frequency=frequency))
+                        response = stub.Invoke(lachesis_pb2.InvokeRequest(function='linpack', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY, frequency=frequency))
                         print(f'Response for function linpack: {response}')
                         # check if function invocation is completed
+                        pk = response.primary_key
                         waitForInvocationCompletion(pk, cursor)
     db_conn.close()
     print('Completed linpack invocations')
@@ -368,9 +392,10 @@ def test_floatmatmult():
                         parameter_list.append(selected_row['file_name'])
                         slo = float(selected_row['duration']) * (1 + SLO_MULTIPLIER)
 
-                        response, pk = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY, frequency=frequency))
+                        response = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY, frequency=frequency))
                         print(f'Resposne for function floatmatmult: {response}')
                         # check if function invocation is completed
+                        pk = response.primary_key
                         waitForInvocationCompletion(pk, cursor)
     db_conn.close()
     print('Completed floatmatmul invocations')
@@ -397,9 +422,10 @@ def test_image_process():
                         parameter_list = [str(selected_row['file_name'])]
                         slo = float(selected_row['duration']) * (1 + SLO_MULTIPLIER)
 
-                        response, pk = stub.Invoke(lachesis_pb2.InvokeRequest(function='imageprocess', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY, frequency=frequency))
+                        response = stub.Invoke(lachesis_pb2.InvokeRequest(function='imageprocess', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY, frequency=frequency))
                         print(f'Response for function imageprocess: {response}')
                         # check if function invocation is completed
+                        pk = response.primary_key
                         waitForInvocationCompletion(pk, cursor)
     db_conn.close()
     print('Completed imageprocess invocations')
@@ -426,9 +452,10 @@ def test_encrypt():
                         parameter_list = [str(selected_row['length']), str(selected_row['iterations'])]
                         slo = float(selected_row['duration']) * (1 + SLO_MULTIPLIER)
                         
-                        response, pk = stub.Invoke(lachesis_pb2.InvokeRequest(function='encrypt', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY, frequency=frequency))
+                        response = stub.Invoke(lachesis_pb2.InvokeRequest(function='encrypt', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY, frequency=frequency))
                         print(f'Response for function encrypt: {response}')
                         # check if function invocation is completed
+                        pk = response.primary_key
                         waitForInvocationCompletion(pk, cursor)
     db_conn.close()
     print('Completed encrypt invocations')
@@ -455,15 +482,17 @@ def test_video_process():
                         parameter_list = [str(selected_row['file_name'])]
                         slo = float(selected_row['duration']) * (1 + SLO_MULTIPLIER)    # this might be duration of video, ask Prasoon
 
-                        response, pk = stub.Invoke(lachesis_pb2.InvokeRequest(function='videoprocess', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY, frequency=frequency))
+                        response = stub.Invoke(lachesis_pb2.InvokeRequest(function='videoprocess', slo=slo, parameters=parameter_list, cpu=cpu, memory=CONST_MEMORY, frequency=frequency))
                         print(f'Response for function imageprocess: {response}')
                         # check if function invocation is completed
+                        pk = response.primary_key
                         waitForInvocationCompletion(pk, cursor)
     db_conn.close()
     print('Completed imageprocess invocations')
 
 if __name__=='__main__':
-    # register_functions()
+    # register_functions(case=FunctionType.FLOATMATMULT)
+    test_floatmatmult_invocation()
     # test_invocations()
     # launch_slo_invocations()
     # obtain_input_duration(quantile=0.5)

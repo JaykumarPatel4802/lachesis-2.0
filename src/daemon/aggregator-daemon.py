@@ -9,6 +9,7 @@ import grpc
 import argparse
 import glob
 from datetime import datetime
+import subprocess
 
 from generated import lachesis_pb2_grpc, lachesis_pb2, cypress_pb2_grpc, cypress_pb2
 
@@ -158,6 +159,18 @@ def parse_energy(rows):
 
     return final_energy
 
+def kill_container(container_id):
+    # execute `docker kill` command
+    command = f'docker kill {container_id}'
+    process = subprocess.Popen(command, shell=True, executable='/bin/bash', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    if process.returncode == 0:
+        print(f'Killed container {container_id}')
+    else:
+        print(f'Failed to kill container {container_id}')
+        print(stdout)
+        print(stderr)
+    return
 
 # Function to monitor the queue and process data
 def monitor_queue(data_queue):
@@ -185,11 +198,13 @@ def monitor_queue(data_queue):
 
                 energy = -1
 
+                if energy_rows:
+                    energy = parse_energy(energy_rows)
+
+                kill_container(container_id)
+
                 # for an invocation and completed before thread for that container began collecting util
                 if rows:
-
-                    if energy_rows:
-                        energy = parse_energy(energy_rows)
 
                     # Extract data from the rows
                     cpu_usages = np.array([row[0] for row in rows])
@@ -282,9 +297,9 @@ if __name__=='__main__':
     
     # Argument parsing
     parser = argparse.ArgumentParser(description='Daemon to monitor and process log data.')
-    parser.add_argument('--controller-ip', dest='controller_ip', default='129.114.108.12', help='central controller IP')
+    parser.add_argument('--controller-ip', dest='controller_ip', default='129.114.109.133', help='central controller IP')
     parser.add_argument('--controller-port', dest='controller_port', default='50051', help='central controller port')
-    parser.add_argument('--invoker-ip', dest='invoker_ip', default='129.114.108.163', help='Invoker IP')
+    parser.add_argument('--invoker-ip', dest='invoker_ip', default='129.114.108.87', help='Invoker IP')
     parser.add_argument('--invoker-name', dest='invoker_name', default='w1', help='Invoker name')
     args = parser.parse_args()
 
