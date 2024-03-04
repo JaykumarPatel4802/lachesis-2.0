@@ -793,8 +793,6 @@ class EnergyTracer(object):
         :param ascribable_energy_consumption: [num_sockets x (pkg, dram)]
         """
 
-        print("Collecting Results")
-
         def flash_results():
             self.iolock.acquire()   # can remove
 
