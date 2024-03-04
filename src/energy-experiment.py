@@ -259,7 +259,7 @@ def test_invocations():
 def test_floatmatmult_invocation():
     with grpc.insecure_channel('localhost:50051') as channel:
         stub = lachesis_pb2_grpc.LachesisStub(channel)
-        response = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=(float(13297.5) * (1 + SLO_MULTIPLIER)), parameters=['matrix1_6000_0.9.txt', 'matrix1_6000_0.9.txt'], cpu=4, memory=CONST_MEMORY, frequency=2400000))
+        response = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=(float(13297.5) * (1 + SLO_MULTIPLIER)), parameters=['matrix1_8000_0.5.txt', 'matrix1_8000_0.5.txt'], cpu=4, memory=CONST_MEMORY, frequency=2400000))
         pk = response.primary_key
         print(f'PK: {pk},  Resposne for function floatmatmult: {response}')
 
