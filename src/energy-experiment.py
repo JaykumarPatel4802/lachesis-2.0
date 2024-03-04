@@ -175,23 +175,24 @@ def register_functions(case = FunctionType.ALL):
     with grpc.insecure_channel('localhost:50051') as channel:
         stub = lachesis_pb2_grpc.LachesisStub(channel)
 
-        function_metadata = ['docker:psinha25/main-python']
-        parameters = ['endpoint:\"10.52.3.142:9002\"', 'access_key:\"testkey\"', 'secret_key:\"testsecret\"', 'bucket:\"openwhisk\"']
+        parameters = ['endpoint:\"10.52.2.0:9002\"', 'access_key:\"testkey\"', 'secret_key:\"testsecret\"', 'bucket:\"openwhisk\"']
 
         for cpu in range(1, CPU_MAX + 1):
 
             if (case == FunctionType.ALL) or (case == FunctionType.IMAGEPROCESS):
                 # Image Process
+                function_metadata = ['docker:psinha25/main-python']
                 response = stub.Register(lachesis_pb2.RegisterRequest(function='imageprocess', 
                                                                     function_path='~/lachesis-2.0/benchmarks/functions/image-processing', 
                                                                     function_metadata=function_metadata, 
                                                                     parameters=parameters,
-                                                                    memory=CONST_MEMORY,
+                                                                    memory=CONST_MEMORY,        
                                                                     cpu=cpu))
                 print(response)
 
             if (case == FunctionType.ALL) or (case == FunctionType.FLOATMATMULT):
                 # Floatmatmult
+                function_metadata = ['docker:psinha25/main-python']
                 response = stub.Register(lachesis_pb2.RegisterRequest(function='floatmatmult',
                                                                     function_path='~/lachesis-2.0/benchmarks/functions/matmult',
                                                                     function_metadata=function_metadata,
@@ -258,7 +259,7 @@ def test_invocations():
 def test_floatmatmult_invocation():
     with grpc.insecure_channel('localhost:50051') as channel:
         stub = lachesis_pb2_grpc.LachesisStub(channel)
-        response = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=(float(13297.5) * (1 + SLO_MULTIPLIER)), parameters=['matrix1_4000_0.7.txt', 'matrix1_4000_0.7.txt'], cpu=4, memory=CONST_MEMORY, frequency=2400000))
+        response = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=(float(13297.5) * (1 + SLO_MULTIPLIER)), parameters=['matrix1_6000_0.9.txt', 'matrix1_6000_0.9.txt'], cpu=4, memory=CONST_MEMORY, frequency=2400000))
         pk = response.primary_key
         print(f'PK: {pk},  Resposne for function floatmatmult: {response}')
 
