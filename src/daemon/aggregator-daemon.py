@@ -65,8 +65,13 @@ def insert_execution_data(log_line, cold_start_tid, cold_start_latency, db_conn,
     #     input_list = [image]
     #     input_json = json.dumps(input_list)
 
-    cursor.execute("INSERT INTO function_executions VALUES (?, ?, NULL, ?, ?, NULL, ?, ?, ?)",
-                   (tid, start_time, function, container_id, final_cold_start_latency, pk, activation_id))
+    
+    # cursor.execute("INSERT INTO function_executions VALUES (?, ?, NULL, ?, ?, NULL, ?, ?, ?)", (tid, start_time, function, container_id, final_cold_start_latency, pk, activation_id))
+
+    cursor.execute("INSERT OR REPLACE INTO function_executions VALUES (?, ?, NULL, ?, ?, NULL, ?, ?, ?)",
+               (tid, start_time, function, container_id, final_cold_start_latency, pk, activation_id))
+
+
     db_conn.commit()
 
 # Function to monitor and process start lines
@@ -134,9 +139,21 @@ def parse_energy(rows):
     # everytime stamp has 2 entries, for each socket, so combine and condense data here
     timestamps = timestamp_list[::2]
     timestamps = timestamps.astype(np.float64)
+    # if len(timestamps) % 2 != 0:
+    #     # If it's odd, remove the last element
+    #     timestamps = timestamps[:-1]
     durations = durations_sec_list[::2]
+    # if len(durations) % 2 != 0:
+    #     # If it's odd, remove the last element
+    #     durations = durations[:-1]
+    # if len(ascribed_pkg_joules_list) % 2 != 0:
+    #     # If it's odd, remove the last element
+    #     ascribed_pkg_joules_list = ascribed_pkg_joules_list[:-1]
     pkg_pairs = ascribed_pkg_joules_list.reshape(-1, 2)
     ascribed_pkg_joules_list = np.sum(pkg_pairs, axis = 1)
+    # if len(ascribed_dram_joules_list) % 2 != 0:
+    #     # If it's odd, remove the last element
+    #     ascribed_dram_joules_list = ascribed_dram_joules_list[:-1]
     dram_pairs = ascribed_dram_joules_list.reshape(-1, 2)
     ascribed_dram_joules_list = np.sum(dram_pairs, axis = 1)
     energies = ascribed_pkg_joules_list + ascribed_dram_joules_list
@@ -194,11 +211,14 @@ def monitor_queue(data_queue):
                             (start_time, end_time, container_id))
                 energy_rows = cursor.fetchall()
 
+                if len(energy_rows) % 2 != 0:
+                    energy_rows = energy_rows[:-1]  # Remove the last entry
+
                 # Sometimes we may not capture utilization -- usually because new container was spun up 
 
                 energy = -1
 
-                if energy_rows:
+                if energy_rows and (len(energy_rows) >= 2):
                     energy = parse_energy(energy_rows)
 
                 kill_container(container_id)
@@ -297,9 +317,9 @@ if __name__=='__main__':
     
     # Argument parsing
     parser = argparse.ArgumentParser(description='Daemon to monitor and process log data.')
-    parser.add_argument('--controller-ip', dest='controller_ip', default='129.114.109.133', help='central controller IP')
+    parser.add_argument('--controller-ip', dest='controller_ip', default='129.114.108.12', help='central controller IP')
     parser.add_argument('--controller-port', dest='controller_port', default='50051', help='central controller port')
-    parser.add_argument('--invoker-ip', dest='invoker_ip', default='129.114.108.87', help='Invoker IP')
+    parser.add_argument('--invoker-ip', dest='invoker_ip', default='129.114.109.158', help='Invoker IP')
     parser.add_argument('--invoker-name', dest='invoker_name', default='w1', help='Invoker name')
     args = parser.parse_args()
 
