@@ -39,12 +39,21 @@ RESULTS_PER_PAGE = 100  # Adjust as needed
 
 # functions = ['floatmatmult', 'imageprocess', 'videoprocess', 'sentiment', 'lrtrain', 'mobilenet', 'encrypt', 'linpack']
 
+# feature_dict = {
+#         'floatmatmult': shuffle(pd.read_csv('../data/vw-prediction-inputs/floatmatmult-inputs.csv'), random_state=0), 
+#         'imageprocess': shuffle(pd.read_csv('../data/vw-prediction-inputs/imageprocess-inputs.csv'), random_state=0),
+#         'videoprocess': shuffle(pd.read_csv('../data/vw-prediction-inputs/videoprocess-inputs.csv'), random_state=0),
+#         'encrypt': shuffle(pd.read_csv('../data/vw-prediction-inputs/encrypt-inputs.csv'), random_state=0),
+#         'linpack': shuffle(pd.read_csv('../data/vw-prediction-inputs/linpack-inputs.csv'), random_state=0)
+#     }
+
+
 feature_dict = {
-        'floatmatmult': shuffle(pd.read_csv('../data/vw-prediction-inputs/floatmatmult-inputs.csv'), random_state=0), 
-        'imageprocess': shuffle(pd.read_csv('../data/vw-prediction-inputs/imageprocess-inputs.csv'), random_state=0),
-        'videoprocess': shuffle(pd.read_csv('../data/vw-prediction-inputs/videoprocess-inputs.csv'), random_state=0),
-        'encrypt': shuffle(pd.read_csv('../data/vw-prediction-inputs/encrypt-inputs.csv'), random_state=0),
-        'linpack': shuffle(pd.read_csv('../data/vw-prediction-inputs/linpack-inputs.csv'), random_state=0)
+        'floatmatmult': pd.read_csv('../data/vw-prediction-inputs/floatmatmult-inputs.csv'), 
+        'imageprocess': pd.read_csv('../data/vw-prediction-inputs/imageprocess-inputs.csv'),
+        'videoprocess': pd.read_csv('../data/vw-prediction-inputs/videoprocess-inputs.csv'),
+        'encrypt': pd.read_csv('../data/vw-prediction-inputs/encrypt-inputs.csv'),
+        'linpack': pd.read_csv('../data/vw-prediction-inputs/linpack-inputs.csv')
     }
 
 functions = ['floatmatmult', 'imageprocess', 'videoprocess', 'encrypt', 'linpack']
@@ -55,13 +64,15 @@ FREQUENCY_MAX = 2400000
 FREQUENCY_MIN = 1000000
 FREQUENCY_INT = 100000
 CONST_MEMORY = 5120
+FREQUENCIES = [1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000]
+CPUS = [1, 2, 3, 5, 7, 10, 13, 16, 19, 22, 25, 28, 31]
 
 SLO_MULTIPLIER = 0.4 # originally 0.4
 
 CONTROLLER_DB = './datastore/lachesis-controller.db'
 
 INVOKER_USERNAME = "cc"
-INVOKER_IP = "129.114.108.87"
+INVOKER_IP = "129.114.109.158"
 
 class FunctionType(Enum):
     ALL = 0
@@ -175,7 +186,7 @@ def register_functions(case = FunctionType.ALL):
     with grpc.insecure_channel('localhost:50051') as channel:
         stub = lachesis_pb2_grpc.LachesisStub(channel)
 
-        parameters = ['endpoint:\"10.52.2.0:9002\"', 'access_key:\"testkey\"', 'secret_key:\"testsecret\"', 'bucket:\"openwhisk\"']
+        parameters = ['endpoint:\"10.52.0.193:9002\"', 'access_key:\"testkey\"', 'secret_key:\"testsecret\"', 'bucket:\"openwhisk\"']
 
         for cpu in range(1, CPU_MAX + 1):
 
@@ -259,7 +270,7 @@ def test_invocations():
 def test_floatmatmult_invocation():
     with grpc.insecure_channel('localhost:50051') as channel:
         stub = lachesis_pb2_grpc.LachesisStub(channel)
-        response = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=(float(13297.5) * (1 + SLO_MULTIPLIER)), parameters=['matrix1_8000_0.5.txt', 'matrix1_8000_0.5.txt'], cpu=4, memory=CONST_MEMORY, frequency=2400000))
+        response = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=(float(13297.5) * (1 + SLO_MULTIPLIER)), parameters=['matrix1_8000_0.5.txt', 'matrix1_8000_0.5.txt'], cpu=32, memory=CONST_MEMORY, frequency=2400000))
         pk = response.primary_key
         print(f'PK: {pk},  Resposne for function floatmatmult: {response}')
 
@@ -310,7 +321,7 @@ def run_experiment():
             time.sleep(max(0, 0.5 - elapsed_time % 0.5))
 
 def changeInvokerFrequency(frequency):
-    command = f'sudo /path/to/script.sh {frequency}'
+    command = f'sudo bash ~/daemon/energat_daemon/change_frequency.sh {frequency}'
 
     ssh_command = f"ssh {INVOKER_USERNAME}@{INVOKER_IP} '{command}'"
     process = subprocess.Popen(ssh_command, shell=True, executable='/bin/bash', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -324,17 +335,46 @@ def changeInvokerFrequency(frequency):
         print(stderr)
         return False
 
+def rerunEnergyTracer():
+    command = f'tmux kill-session -t energy_daemon'
+
+    ssh_command = f"ssh {INVOKER_USERNAME}@{INVOKER_IP} '{command}'"
+    process = subprocess.Popen(ssh_command, shell=True, executable='/bin/bash', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    if process.returncode == 0:
+        print(f'Successfully killed energy tracer')
+    else:
+        print(f'Error killing energy tracer')
+        print(stdout)
+        print(stderr)
+
+    command = f'cd ~/daemon/energat_daemon && sudo rm -r __pycache__ && tmux new-session -d -s energy_daemon \'python3.10 __main__.py\''
+
+    ssh_command = f"ssh {INVOKER_USERNAME}@{INVOKER_IP} '{command}'"
+    process = subprocess.Popen(ssh_command, shell=True, executable='/bin/bash', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    time.sleep(1)
+    if process.returncode == 0:
+        print(f'Successfully reran energy tracer')
+        return True
+    else:
+        print(f'Error rerunning energy tracer')
+        print(stdout)
+        print(stderr)
+        return False
+
 def waitForInvocationCompletion(pk, cursor):
     while(True):
-        cursor.execute("SELECT end_time FROM fxn_exec_data WHERE row_id = ?", (pk,))
+        # cursor.execute("SELECT end_time FROM fxn_exec_data WHERE row_id = ?", (pk,))
+        cursor.execute("SELECT end_time FROM fxn_exec_data LIMIT 1 OFFSET ?", (pk - 1,))
         result = cursor.fetchone()
 
         # Check if the end_time value is "NA"
         if result and result[0] == "NA":
-            # The end_time for row id {pk] is 'NA'
-            sleep(1)
+            # The end_time for row id {pk} is 'NA'
+            time.sleep(1)
         else:
-            # The end_time for row id {pk] is not 'NA'
+            # The end_time for row id {pk} is not 'NA'
             break
 
 def test_linpack():
@@ -380,11 +420,16 @@ def test_floatmatmult():
         stub = lachesis_pb2_grpc.LachesisStub(channel)
         
         for i in range(0, len(df)):
-            for frequency in range(FREQUENCY_MIN, FREQUENCY_MAX + FREQUENCY_INT, FREQUENCY_INT):
+            # for frequency in range(FREQUENCY_MIN, FREQUENCY_MAX + FREQUENCY_INT, FREQUENCY_INT):
+            for frequency in FREQUENCIES:
+                # rerun energy_tracer
+                success = rerunEnergyTracer()
+                assert(success)
                 # handle frequency change
                 success = changeInvokerFrequency(frequency)
                 assert(success)
-                for cpu in range(1, CPU_MAX + 1):
+                # for cpu in range(1, CPU_MAX + 1):
+                for cpu in CPUS:
                     print(f"Running floatmatmult with frequency: {frequency}, cpu: {cpu}, df_row: {i}, memory: {CONST_MEMORY}")
                     for _ in range(3):
                         selected_row = df.iloc[i]
@@ -472,11 +517,18 @@ def test_video_process():
         stub = lachesis_pb2_grpc.LachesisStub(channel)
 
         for i in range(0, len(df)):
-            for frequency in range(FREQUENCY_MIN, FREQUENCY_MAX + FREQUENCY_INT, FREQUENCY_INT):
+            # for frequency in range(FREQUENCY_MIN, FREQUENCY_MAX + FREQUENCY_INT, FREQUENCY_INT):
+            # selected_row = df.iloc[i]
+            # if str(selected_row['file_name']) in ["1.5M-bird.avi", "820K-cbw3.avi", "660K-drop.avi", "6.1M-720.avi", "3.8M-lion-sample.avi"]:
+                # continue
+            for frequency in FREQUENCIES:
+                success = rerunEnergyTracer()
+                assert(success)
                 # handle frequency change
                 success = changeInvokerFrequency(frequency)
                 assert(success)
-                for cpu in range(1, CPU_MAX + 1):
+                # for cpu in range(1, CPU_MAX + 1):
+                for cpu in CPUS:
                     print(f"Running videoprocess with frequency: {frequency}, cpu: {cpu}, df_row: {i}, memory: {CONST_MEMORY}")
                     for _ in range(3):
                         selected_row = df.iloc[i]
@@ -492,8 +544,8 @@ def test_video_process():
     print('Completed imageprocess invocations')
 
 if __name__=='__main__':
-    # register_functions(case=FunctionType.FLOATMATMULT)
-    test_floatmatmult_invocation()
+    # register_functions(case=FunctionType.VIDEOPROCESS)
+    # test_floatmatmult_invocation()
     # test_invocations()
     # launch_slo_invocations()
     # obtain_input_duration(quantile=0.5)
@@ -502,4 +554,8 @@ if __name__=='__main__':
     # test_floatmatmult()
     # test_sentiment()
     # test_image_process()
+    test_video_process()
     # test_encrypt()
+    # success = changeInvokerFrequency(1600000)
+    # print(success)
+    # rerunEnergyTracer()

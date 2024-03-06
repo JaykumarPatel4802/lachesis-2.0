@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <sqlite3.h>
+#include <math.h>
 
 #define MAX_INITIAL_CONTAINERS 4
 char existingContainers[MAX_INITIAL_CONTAINERS][128]; // Global list to store existing containers
@@ -43,9 +44,14 @@ long double readValueFromFile(const char *filename) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
         perror("Error opening file");
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "Error opening file\n");
+        return NAN;
     }
-    fscanf(file, "%Lf", &value);
+    if (fscanf(file, "%Lf", &value) == 1) {
+        return value;
+    } else {
+        return NAN;
+    }
     fclose(file);
     return value;
 }
@@ -69,8 +75,19 @@ void processContainer(const char *containerName, sqlite3 *db) {
     sprintf(memory_usage_path, "%s/memory.usage_in_bytes", memory_path);
     sprintf(memory_inactive_path, "%s/memory.stat", memory_path);
 
-    long double memory_limit = readValueFromFile(memory_limit_path) / (1024 * 1024);
-    long double memory_usage = readValueFromFile(memory_usage_path);
+
+    long double value_from_memory_limit_path = readValueFromFile(memory_limit_path);
+    if(isnan(value_from_memory_limit_path)) {
+        return;
+    }
+
+    long double memory_limit = value_from_memory_limit_path / (1024 * 1024);
+    
+    long double value_from_memory_usage_path = readValueFromFile(memory_usage_path);
+    if(isnan(value_from_memory_usage_path)) {
+        return;
+    }
+    long double memory_usage = value_from_memory_usage_path;
     int total_inactive_file = 0;
 
     FILE *memory_inactive_file = fopen(memory_inactive_path, "r");
@@ -98,7 +115,11 @@ void processContainer(const char *containerName, sqlite3 *db) {
 
 
     // Read and calculate CPU metrics
-    long double cpu_usage_ns = readValueFromFile(cpu_usage_path) / 1e9;
+    long double value_from_cpu_usage_path = readValueFromFile(cpu_usage_path);
+    if(isnan(value_from_cpu_usage_path)) {
+        return;
+    }
+    long double cpu_usage_ns = value_from_cpu_usage_path / 1e9;
     FILE *usage_percpu_file = fopen(cpu_percpu_path, "r");
     int num_cores = 0;
     if (usage_percpu_file != NULL) {
