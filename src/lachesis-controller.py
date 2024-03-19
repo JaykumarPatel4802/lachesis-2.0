@@ -175,10 +175,14 @@ class Lachesis(lachesis_pb2_grpc.LachesisServicer):
         if row:
             slo, cpu_limit, mem_limit, inputs = row[0], row[1], row[2], json.loads(row[3])
 
-        p90_cpu_used = max(cpu_limit, request.p90_cpu / 100)
-        p95_cpu_used = max(cpu_limit, request.p95_cpu / 100)
-        p99_cpu_used = max(cpu_limit, request.p99_cpu / 100)
-        max_cpu_used = max(cpu_limit, request.max_cpu / 100)
+        # p90_cpu_used = max(cpu_limit, request.p90_cpu / 100)
+        # p95_cpu_used = max(cpu_limit, request.p95_cpu / 100)
+        # p99_cpu_used = max(cpu_limit, request.p99_cpu / 100)
+        # max_cpu_used = max(cpu_limit, request.max_cpu / 100)
+        p90_cpu_used = request.p90_cpu / 100
+        p95_cpu_used = request.p95_cpu / 100
+        p99_cpu_used = request.p99_cpu / 100
+        max_cpu_used = request.max_cpu / 100
         max_mem_used = int(request.max_mem)
 
         print(f"Inserting - activation id: {request.activation_id}, pk: {request.pk}, max_cpu_used: {max_cpu_used}, max_mem_used: {max_mem_used}")

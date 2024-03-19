@@ -180,7 +180,7 @@ def delete_specific_exp(exp):
 
 
 if __name__=='__main__':
-    # delete_table('fxn_exec_data')
+    delete_table('fxn_exec_data')
     create_tables()
     # view_fxn_exec_table()
     # print()
