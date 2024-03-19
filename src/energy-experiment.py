@@ -53,9 +53,13 @@ feature_dict = {
         'imageprocess': pd.read_csv('../data/vw-prediction-inputs/imageprocess-inputs.csv'),
         'videoprocess': pd.read_csv('../data/vw-prediction-inputs/videoprocess-inputs.csv'),
         'encrypt': pd.read_csv('../data/vw-prediction-inputs/encrypt-inputs.csv'),
+<<<<<<< HEAD
         'linpack': pd.read_csv('../data/vw-prediction-inputs/linpack-inputs.csv'),
         'lrtrain': pd.read_csv('../data/vw-prediction-inputs/lrtrain-inputs.csv'),
         'sentiment': pd.read_csv('../data/vw-prediction-inputs/sentiment-inputs.csv')
+=======
+        'linpack': pd.read_csv('../data/vw-prediction-inputs/linpack-inputs.csv')
+>>>>>>> 14a01c56c1378001315cf837e1647e2493224b2e
     }
 
 functions = ['floatmatmult', 'imageprocess', 'videoprocess', 'encrypt', 'linpack']
@@ -81,7 +85,7 @@ SLO_MULTIPLIER = 0.4 # originally 0.4
 CONTROLLER_DB = './datastore/lachesis-controller.db'
 
 INVOKER_USERNAME = "cc"
-INVOKER_IP = "129.114.108.87"
+INVOKER_IP = "129.114.109.158"
 
 class FunctionType(Enum):
     ALL = 0
@@ -248,7 +252,7 @@ def register_functions(case = FunctionType.ALL):
     with grpc.insecure_channel('localhost:50051') as channel:
         stub = lachesis_pb2_grpc.LachesisStub(channel)
 
-        parameters = ['endpoint:\"10.52.2.0:9002\"', 'access_key:\"testkey\"', 'secret_key:\"testsecret\"', 'bucket:\"openwhisk\"']
+        parameters = ['endpoint:\"10.52.0.193:9002\"', 'access_key:\"testkey\"', 'secret_key:\"testsecret\"', 'bucket:\"openwhisk\"']
 
         for cpu in range(1, CPU_MAX + 1):
 
@@ -429,7 +433,11 @@ def changeInvokerFrequency(frequency):
         return False
 
 def rerunEnergyTracer():
+<<<<<<< HEAD
     command = f'sudo tmux kill-session -t energy_daemon'
+=======
+    command = f'tmux kill-session -t energy_daemon'
+>>>>>>> 14a01c56c1378001315cf837e1647e2493224b2e
 
     ssh_command = f"ssh {INVOKER_USERNAME}@{INVOKER_IP} '{command}'"
     process = subprocess.Popen(ssh_command, shell=True, executable='/bin/bash', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -441,7 +449,11 @@ def rerunEnergyTracer():
         print(stdout)
         print(stderr)
 
+<<<<<<< HEAD
     command = f'cd ~/daemon/energat_daemon && sudo rm -r __pycache__ && sudo tmux new-session -d -s energy_daemon \'python3.10 __main__.py\''
+=======
+    command = f'cd ~/daemon/energat_daemon && sudo rm -r __pycache__ && tmux new-session -d -s energy_daemon \'python3.10 __main__.py\''
+>>>>>>> 14a01c56c1378001315cf837e1647e2493224b2e
 
     ssh_command = f"ssh {INVOKER_USERNAME}@{INVOKER_IP} '{command}'"
     process = subprocess.Popen(ssh_command, shell=True, executable='/bin/bash', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -619,6 +631,12 @@ def test_video_process():
 
         for i in range(0, len(df)):
             # for frequency in range(FREQUENCY_MIN, FREQUENCY_MAX + FREQUENCY_INT, FREQUENCY_INT):
+<<<<<<< HEAD
+=======
+            # selected_row = df.iloc[i]
+            # if str(selected_row['file_name']) in ["1.5M-bird.avi", "820K-cbw3.avi", "660K-drop.avi", "6.1M-720.avi", "3.8M-lion-sample.avi"]:
+                # continue
+>>>>>>> 14a01c56c1378001315cf837e1647e2493224b2e
             for frequency in FREQUENCIES:
                 success = rerunEnergyTracer()
                 assert(success)
@@ -673,9 +691,14 @@ def test_sentiment():
         print('Completed sentiment invocations')
 
 if __name__=='__main__':
+<<<<<<< HEAD
     # register_functions(case=FunctionType.SENTIMENT)
     # test_floatmatmult_invocation()
     # test_videoprocess_invocation()
+=======
+    # register_functions(case=FunctionType.VIDEOPROCESS)
+    # test_floatmatmult_invocation()
+>>>>>>> 14a01c56c1378001315cf837e1647e2493224b2e
     # test_invocations()
     # launch_slo_invocations()
     # obtain_input_duration(quantile=0.5)
@@ -687,8 +710,12 @@ if __name__=='__main__':
     # test_floatmatmult()
     # test_sentiment()
     # test_image_process()
+    test_video_process()
     # test_encrypt()
+<<<<<<< HEAD
     # test_video_process()
+=======
+>>>>>>> 14a01c56c1378001315cf837e1647e2493224b2e
     # success = changeInvokerFrequency(1600000)
     # print(success)
     # rerunEnergyTracer()

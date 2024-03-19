@@ -1,6 +1,6 @@
 {
     "access_key": "testkey",
     "bucket": "openwhisk",
-    "endpoint": "10.52.2.0:9002",
+    "endpoint": "10.52.0.193:9002",
     "secret_key": "testsecret"
 }
