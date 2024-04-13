@@ -3,7 +3,7 @@ import os
 import json
 
 minio_config = {}
-minio_config['endpoint'] = '10.52.0.193:9002' # hostname -I | awk '{print $1}' 
+minio_config['endpoint'] = '10.52.2.197:9002' # hostname -I | awk '{print $1}' 
 minio_config['access_key'] = 'testkey'
 minio_config['secret_key'] = 'testsecret'
 minio_config['bucket'] = 'openwhisk'

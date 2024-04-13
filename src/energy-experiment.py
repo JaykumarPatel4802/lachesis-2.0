@@ -53,13 +53,9 @@ feature_dict = {
         'imageprocess': pd.read_csv('../data/vw-prediction-inputs/imageprocess-inputs.csv'),
         'videoprocess': pd.read_csv('../data/vw-prediction-inputs/videoprocess-inputs.csv'),
         'encrypt': pd.read_csv('../data/vw-prediction-inputs/encrypt-inputs.csv'),
-<<<<<<< HEAD
         'linpack': pd.read_csv('../data/vw-prediction-inputs/linpack-inputs.csv'),
         'lrtrain': pd.read_csv('../data/vw-prediction-inputs/lrtrain-inputs.csv'),
         'sentiment': pd.read_csv('../data/vw-prediction-inputs/sentiment-inputs.csv')
-=======
-        'linpack': pd.read_csv('../data/vw-prediction-inputs/linpack-inputs.csv')
->>>>>>> 14a01c56c1378001315cf837e1647e2493224b2e
     }
 
 functions = ['floatmatmult', 'imageprocess', 'videoprocess', 'encrypt', 'linpack']
@@ -85,7 +81,7 @@ SLO_MULTIPLIER = 0.4 # originally 0.4
 CONTROLLER_DB = './datastore/lachesis-controller.db'
 
 INVOKER_USERNAME = "cc"
-INVOKER_IP = "129.114.109.158"
+INVOKER_IP = "129.114.108.87"
 
 class FunctionType(Enum):
     ALL = 0
@@ -101,18 +97,47 @@ def register_floatmatmult_mem_test_functions():
     with grpc.insecure_channel('localhost:50051') as channel:
         stub = lachesis_pb2_grpc.LachesisStub(channel)
 
-        parameters = ['endpoint:\"10.52.2.0:9002\"', 'access_key:\"testkey\"', 'secret_key:\"testsecret\"', 'bucket:\"openwhisk\"']
+        parameters = ['endpoint:\"10.52.2.197:9002\"', 'access_key:\"testkey\"', 'secret_key:\"testsecret\"', 'bucket:\"openwhisk\"']
 
-        for memory in [256, 512, 1024, 2048, 4096]:
-            # Floatmatmult
-            function_metadata = ['docker:psinha25/main-python']
-            response = stub.Register(lachesis_pb2.RegisterRequest(function='floatmatmult',
-                                                                function_path='~/lachesis-2.0/benchmarks/functions/matmult',
-                                                                function_metadata=function_metadata,
-                                                                parameters=parameters,
-                                                                memory=memory,
-                                                                cpu=1))
-            print(response)
+        for memory in [1024, 2048, 4096]:
+            for frequency in [1000000, 1800000, 2400000]:
+                # Floatmatmult
+                function_metadata = ['docker:psinha25/main-python']
+                response = stub.Register(lachesis_pb2.RegisterRequest(function='floatmatmult',
+                                                                    function_path='~/lachesis-2.0/benchmarks/functions/matmult',
+                                                                    function_metadata=function_metadata,
+                                                                    parameters=parameters,
+                                                                    memory=memory,
+                                                                    cpu=2,
+                                                                    frequency=frequency))
+                print(response)
+
+def test_floatmatmult_scheduler_test():
+
+    db_conn = sqlite3.connect(CONTROLLER_DB)
+    cursor = db_conn.cursor()
+
+    with grpc.insecure_channel('localhost:50051') as channel:
+        stub = lachesis_pb2_grpc.LachesisStub(channel)
+        
+        floatmatmul_input = "matrix1_4000_0.7.txt"
+        mem_freq = [(1024, 1000000), (2048, 1800000), (4096, 2400000)]
+        cpu = 2
+        for (mem, frequency) in mem_freq:
+            print(f"Running floatmatmult with frequency: {frequency}, cpu: {cpu}, memory: {mem}")
+            parameter_list = []
+            parameter_list.append(floatmatmul_input)
+            parameter_list.append(floatmatmul_input)
+            slo = float(76132.2 * (1 + SLO_MULTIPLIER))
+
+            response = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=slo, parameters=parameter_list, cpu=cpu, memory=mem, frequency=frequency))
+            print(f'Resposne for function floatmatmult: {response}')
+            # check if function invocation is completed
+            pk = response.primary_key
+            time.sleep(10)
+    db_conn.close()
+    print('Completed floatmatmul invocations')
+
 
 def test_floatmatmult_mem_test():
 
@@ -433,11 +458,7 @@ def changeInvokerFrequency(frequency):
         return False
 
 def rerunEnergyTracer():
-<<<<<<< HEAD
     command = f'sudo tmux kill-session -t energy_daemon'
-=======
-    command = f'tmux kill-session -t energy_daemon'
->>>>>>> 14a01c56c1378001315cf837e1647e2493224b2e
 
     ssh_command = f"ssh {INVOKER_USERNAME}@{INVOKER_IP} '{command}'"
     process = subprocess.Popen(ssh_command, shell=True, executable='/bin/bash', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -449,11 +470,7 @@ def rerunEnergyTracer():
         print(stdout)
         print(stderr)
 
-<<<<<<< HEAD
     command = f'cd ~/daemon/energat_daemon && sudo rm -r __pycache__ && sudo tmux new-session -d -s energy_daemon \'python3.10 __main__.py\''
-=======
-    command = f'cd ~/daemon/energat_daemon && sudo rm -r __pycache__ && tmux new-session -d -s energy_daemon \'python3.10 __main__.py\''
->>>>>>> 14a01c56c1378001315cf837e1647e2493224b2e
 
     ssh_command = f"ssh {INVOKER_USERNAME}@{INVOKER_IP} '{command}'"
     process = subprocess.Popen(ssh_command, shell=True, executable='/bin/bash', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -631,12 +648,9 @@ def test_video_process():
 
         for i in range(0, len(df)):
             # for frequency in range(FREQUENCY_MIN, FREQUENCY_MAX + FREQUENCY_INT, FREQUENCY_INT):
-<<<<<<< HEAD
-=======
             # selected_row = df.iloc[i]
             # if str(selected_row['file_name']) in ["1.5M-bird.avi", "820K-cbw3.avi", "660K-drop.avi", "6.1M-720.avi", "3.8M-lion-sample.avi"]:
                 # continue
->>>>>>> 14a01c56c1378001315cf837e1647e2493224b2e
             for frequency in FREQUENCIES:
                 success = rerunEnergyTracer()
                 assert(success)
@@ -690,32 +704,90 @@ def test_sentiment():
                         waitForInvocationCompletion(pk, cursor)
         print('Completed sentiment invocations')
 
+def test_sequential_floatmatmult(cpu_count, frequency):
+
+    db_conn = sqlite3.connect(CONTROLLER_DB)
+    cursor = db_conn.cursor()
+
+    with grpc.insecure_channel('localhost:50051') as channel:
+        stub = lachesis_pb2_grpc.LachesisStub(channel)
+        
+        success = rerunEnergyTracer()
+        assert(success)
+        success = changeInvokerFrequency(frequency)
+        assert(success)
+        for i in range(5):
+            print(f"Running floatmatmult with frequency: {frequency}, cpu: {cpu_count}, df_row: {i}, memory: {CONST_MEMORY}")
+            parameter_list = []
+            parameter_list.append("matrix1_8000_0.7.txt")
+            parameter_list.append("matrix1_8000_0.7.txt")
+            slo = 76132.2 * (1 + SLO_MULTIPLIER)
+
+            response = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=slo, parameters=parameter_list, cpu=cpu_count, memory=CONST_MEMORY, frequency=frequency))
+            print(f'Resposne for function floatmatmult: {response}')
+            # check if function invocation is completed
+            pk = response.primary_key
+            waitForInvocationCompletion(pk, cursor)
+    db_conn.close()
+    print('Completed floatmatmul invocations')
+
+def test_parallel_floatmatmult(cpu_count, frequency, delay=0.5):
+
+    db_conn = sqlite3.connect(CONTROLLER_DB)
+    cursor = db_conn.cursor()
+
+    with grpc.insecure_channel('localhost:50051') as channel:
+        stub = lachesis_pb2_grpc.LachesisStub(channel)
+        pks = []
+
+        success = rerunEnergyTracer()
+        assert(success)
+        success = changeInvokerFrequency(frequency)
+        assert(success)
+        for i in range(20):
+            print(f"Running floatmatmult with frequency: {frequency}, cpu: {cpu_count}, df_row: {i}, memory: {CONST_MEMORY}")
+            parameter_list = []
+            parameter_list.append("matrix1_8000_0.7.txt")
+            parameter_list.append("matrix1_8000_0.7.txt")
+            slo = 76132.2 * (1 + SLO_MULTIPLIER)
+
+            response = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=slo, parameters=parameter_list, cpu=cpu_count, memory=CONST_MEMORY, frequency=frequency))
+            print(f'Response for function floatmatmult: {response}')
+            # check if function invocation is completed
+            pk = response.primary_key
+            pks.append(pk)
+            time.sleep(delay)
+        for pk in pks:
+            waitForInvocationCompletion(pk, cursor)
+    db_conn.close()
+    print('Completed floatmatmul invocations')
+
 if __name__=='__main__':
-<<<<<<< HEAD
     # register_functions(case=FunctionType.SENTIMENT)
     # test_floatmatmult_invocation()
     # test_videoprocess_invocation()
-=======
-    # register_functions(case=FunctionType.VIDEOPROCESS)
-    # test_floatmatmult_invocation()
->>>>>>> 14a01c56c1378001315cf837e1647e2493224b2e
     # test_invocations()
     # launch_slo_invocations()
     # obtain_input_duration(quantile=0.5)
     # run_experiment()
-    # register_floatmatmult_mem_test_functions()
 
-    test_floatmatmult_mem_test()
+    # register_floatmatmult_mem_test_functions()
+    test_floatmatmult_scheduler_test()
+
+    # test_floatmatmult_mem_test()
     # test_linpack()
     # test_floatmatmult()
     # test_sentiment()
     # test_image_process()
-    test_video_process()
-    # test_encrypt()
-<<<<<<< HEAD
     # test_video_process()
-=======
->>>>>>> 14a01c56c1378001315cf837e1647e2493224b2e
+    # test_encrypt()
+    # test_video_process()
     # success = changeInvokerFrequency(1600000)
     # print(success)
     # rerunEnergyTracer()
+    # cpu_values = [31, 25, 19, 13, 7, 3, 1]
+    # for cpu_value in cpu_values:
+    #     test_sequential_floatmatmult(cpu_value, 2400000)
+    #     time.sleep(5)
+    #     test_parallel_floatmatmult(cpu_value, 2400000)
+    #     time.sleep(10)

@@ -54,17 +54,17 @@ class Lachesis(lachesis_pb2_grpc.LachesisServicer):
     __launched_one_daemon = False
     __image_cpu_port = None
     
-    def __launch_ow(self, cpu_limit, mem_limit, primary_key, fxn, inputs):
+    def __launch_ow(self, cpu_limit, mem_limit, frequency, primary_key, fxn, inputs):
         # Construct invocation command for OpenWhisk
         fxn_invocation_command = None
 
         if len(inputs) == 2:
-            fxn_invocation_command = f'wsk -i action invoke {fxn}_{cpu_limit}_{mem_limit} \
+            fxn_invocation_command = f'wsk -i action invoke {fxn}_{cpu_limit}_{mem_limit}_{frequency} \
                                        --param input1 {inputs[0]} \
                                        --param input2 {inputs[1]} \
                                        --param pk {primary_key}\n'
         elif len(inputs) == 1:
-            fxn_invocation_command = f'wsk -i action invoke {fxn}_{cpu_limit}_{mem_limit} \
+            fxn_invocation_command = f'wsk -i action invoke {fxn}_{cpu_limit}_{mem_limit}_{frequency} \
                                        --param input1 {inputs[0]} \
                                        --param pk {primary_key}\n'
         
@@ -72,7 +72,7 @@ class Lachesis(lachesis_pb2_grpc.LachesisServicer):
         invocation_output = subprocess.Popen(fxn_invocation_command, shell=True, executable='/bin/bash', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = invocation_output.communicate()
         if invocation_output.returncode == 0:
-            print(f'Launched function {fxn} with {cpu_limit} CPUs, {mem_limit} Memory, and {inputs} inputs.')
+            print(f'Launched function {fxn} with {cpu_limit} CPUs, {mem_limit} Memory, {frequency} Frequency, and {inputs} inputs.')
             activation_id = stdout.decode('utf-8').strip().split(' ')[-1]
             return activation_id
         else:
@@ -112,16 +112,17 @@ class Lachesis(lachesis_pb2_grpc.LachesisServicer):
         # memory = mem_class * 128
         memory = request.memory
         cpu = request.cpu
-        print(f"Registering {request.function} with cpu: {cpu}, memory: {memory}")
-        fxn_registration_command = 'cd {}; wsk -i action update {}_{}_{} {}.py --cpu {} --memory {} {} {}\n'.format(request.function_path, request.function, cpu, memory, request.function, cpu, memory, function_metadata_string, parameter_string)
+        frequency = request.frequency
+        print(f"Registering {request.function} with cpu: {cpu}, memory: {memory}, frequency: {frequency}")
+        fxn_registration_command = 'cd {}; wsk -i action update {}_{}_{}_{} {}.py --cpu {} --memory {} {} {}\n'.format(request.function_path, request.function, cpu, memory, frequency, request.function, cpu, memory, function_metadata_string, parameter_string)
         tmp = subprocess.Popen(fxn_registration_command, shell=True, executable='/bin/bash', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         fxn_reg_out, fxn_reg_err = tmp.communicate()
         fxn_reg_out = fxn_reg_out.decode()
         fxn_reg_err = fxn_reg_err.decode()
         if 'ok: updated action' not in fxn_reg_out:
-            return lachesis_pb2.Reply(status='FAILURE', message='failed to register function {} with cpu {} and memory {}. Output was: {}. Eror was: {}.'.format(request.function, cpu, memory, fxn_reg_out, fxn_reg_err))
+            return lachesis_pb2.Reply(status='FAILURE', message='failed to register function {} with cpu {}, memory {}, and frequency {}. Output was: {}. Eror was: {}.'.format(request.function, cpu, memory, frequency, fxn_reg_out, fxn_reg_err))
 
-        return lachesis_pb2.Reply(status='SUCCESS', message='successfully registered function {} with cpu {} and memory {}'.format(request.function, request.cpu, request.memory))
+        return lachesis_pb2.Reply(status='SUCCESS', message='successfully registered function {} with cpu {}, memory {}, and frequency {}'.format(request.function, request.cpu, request.memory, request.frequency))
     
     def Invoke(self, request, context):
 
@@ -131,14 +132,18 @@ class Lachesis(lachesis_pb2_grpc.LachesisServicer):
 
         cpu_assigned = request.cpu
         mem_assigned = request.memory
+        freq_assigned = request.frequency
 
-        print(f"Invoking {request.function} with cpu: {cpu_assigned}, memory: {mem_assigned}")
+        print(f"Invoking {request.function} with cpu: {cpu_assigned}, memory: {mem_assigned}, frequency: {freq_assigned}")
         
+        # exp_version = request.exp_version
+        exp_version = 1
+
         # Insert invocation data into database, begin executing, and update activation id in database!
         cursor.execute('INSERT INTO fxn_exec_data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                        (request.function, lachesis_start, 'NA', 'NA', 'NA', -1.0, -1.0, request.slo, json.dumps(list(request.parameters)), cpu_assigned, mem_assigned, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 'NA', 'NA', 'NA', request.exp_version, -1, -1, -1, request.frequency))
+                        (request.function, lachesis_start, 'NA', 'NA', 'NA', -1.0, -1.0, request.slo, json.dumps(list(request.parameters)), cpu_assigned, mem_assigned, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 'NA', 'NA', 'NA', exp_version, -1, -1, -1, request.frequency))
         pk = cursor.lastrowid
-        activation_id = self.__launch_ow(cpu_assigned, mem_assigned, pk, request.function, request.parameters)
+        activation_id = self.__launch_ow(cpu_assigned, mem_assigned, freq_assigned, pk, request.function, request.parameters)
         cursor.execute('UPDATE fxn_exec_data SET activation_id = ? WHERE rowid = ?', (activation_id, pk))
         db_conn.commit()
         db_conn.close()

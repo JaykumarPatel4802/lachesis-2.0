@@ -8,17 +8,16 @@ message RegisterRequest {
     repeated string parameters = 4;
     int32 memory = 5;
     int32 cpu = 6;
+    int32 frequency = 7;
 }
 
 message InvokeRequest {
     string function = 1;
     double slo = 2;
     repeated string parameters = 3;
-    string exp_version = 4;
-    string system = 5;
-    int32 memory = 6;
-    int32 cpu = 7;
-    int32 frequency = 8;
+    int32 cpu = 4;
+    int32 memory = 5;
+    int32 frequency = 6;
 
 }
 
