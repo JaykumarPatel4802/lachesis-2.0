@@ -64,14 +64,14 @@ def process_container(container_id, db):
         energy_tracer = EnergyTracer(docker_pid, attach=True, project=name, container_id = container_id)
         try:
             energy_tracer.run()
-            print("Run GOOD")
+            # print("Run GOOD")
             return
         except Exception as e1:
             # energy_tracer.stop_tracer_daemon_thread = True
             # if energy_tracer.tracer_daemon_thread is not None:
                 # if energy_tracer.tracer_daemon_thread.is_alive():
                     # energy_tracer.tracer_daemon_thread.join()
-            print("Run BAD")
+            # print("Run BAD")
             energy_tracer.stop_flag.set()
             if energy_tracer.tracer_daemon_thread is not None:
                 energy_tracer.tracer_daemon_thread.join()
@@ -285,10 +285,10 @@ def main():
     count = 0
 
     while (1):
-        count += 1
-        if count == 100000:
-            print(f"Count is 10000")
-            count = 0
+        # count += 1
+        # if count == 100000:
+        #     print(f"Count is 10000")
+        #     count = 0
         container_dir = "/sys/fs/cgroup/memory/docker"
         try:
             with os.scandir(container_dir) as entries:
@@ -298,9 +298,9 @@ def main():
                         if container_name not in init_containers:
                             name = get_container_name(container_name)
                             if name != "" and "nodejs" not in name:
-                                print(f"ID: {container_name}")
+                                # print(f"ID: {container_name}")
                                 process_container(container_name, db)
-                                count = 0
+                                # count = 0
                         # process_container(container_name, db)
             # time.sleep(daemon_period)  # Sleep for 500 milliseconds
         except FileNotFoundError:

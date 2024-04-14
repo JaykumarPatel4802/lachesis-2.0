@@ -791,3 +791,25 @@ if __name__=='__main__':
     #     time.sleep(5)
     #     test_parallel_floatmatmult(cpu_value, 2400000)
     #     time.sleep(10)
+
+"""
+Simple Test:
+Run floatmatmult with 2000 input on a container with 3 cores, 1024 mb, and 2400000 frequency
+
+Then wait until that is done, but we still have a warm container, say container C1
+
+Then run floatmatmult with 2000 input with 2 cores and 512 mb an 1800000 frequency.
+- this should run on container C1, but create a warm container, say C2
+- can check if this warm container was created using "docker stats"
+
+Now wait for all invocations to end.
+
+Then run floatmatmult with 2000 input with 2 cores and 512 mb and 1800000 frequency.
+- this should now run on container C2 and not C1
+
+
+According to the scheduler, initially, if no warm containers and all invokers have space, then it will keep iterating until it cannot.
+That last invoker is the chosenInvoker and so the invocation would be routed to that.
+That means that if we invoker with target 1800000 frequency, it will be run on 2400000 frequency one.
+BUT we still want to warm start a container on the 1800000 frequency machine. STILL NEED TO MAKE SURE THE WARM START STUFF WORKS
+"""

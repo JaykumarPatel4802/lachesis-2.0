@@ -1,0 +1,8 @@
+ssh cc@in1 "cd daemon && bash start_daemons.sh"
+ssh cc@in2 "cd daemon && bash start_daemons.sh"
+ssh cc@in3 "cd daemon && bash start_daemons.sh"
+ssh cc@in4 "cd daemon && bash start_daemons.sh"
+ssh cc@in5 "cd daemon && bash start_daemons.sh"
+ssh cc@in6 "cd daemon && bash start_daemons.sh"
+ssh cc@in7 "cd daemon && bash start_daemons.sh"
+ssh cc@in8 "cd daemon && bash start_daemons.sh"
