@@ -20,6 +20,14 @@ function_dfs = {
     'encrypt': df_encrypt
 }
 
+function_slos = {
+    'floatmatmult': 76132.2,
+    'linpack': 45008.67293666026,
+    'imageprocess': 5491.8,
+    'videoprocess': 20592.6,
+    'encrypt': 41125.799999999996
+}
+
 # get unique set of "function_input" column values for each df
 unique_inputs = {}
 for key in function_dfs:
@@ -40,8 +48,9 @@ for func_type, df in function_dfs.items():
     # Plot for Energy
     plt.subplot(1, 2, 1)  # 1 row, 2 columns, 1st subplot
     for input_value in sampled_inputs[func_type]:
+        truncated_input = (input_value[:15] + '...') if len(input_value) > 15 else input_value
         subset = df[df['function_input'] == input_value]  # Adjust for actual matching
-        plt.plot(subset.index, subset['energy'], label=f'Input {input_value}')  # Using DataFrame index
+        plt.plot(subset.index, subset['energy'], label=f'Input {truncated_input}')  # Using DataFrame index
     plt.title(f'Energy Plot for {func_type}')
     plt.xlabel('Index (Row Number)')
     plt.ylabel('Energy')
@@ -50,8 +59,10 @@ for func_type, df in function_dfs.items():
     # Plot for Duration
     plt.subplot(1, 2, 2)  # 1 row, 2 columns, 2nd subplot
     for input_value in sampled_inputs[func_type]:
+        truncated_input = (input_value[:15] + '...') if len(input_value) > 15 else input_value
         subset = df[df['function_input'] == input_value]  # Adjust for actual matching
-        plt.plot(subset.index, subset['duration'], label=f'Input {input_value}')  # Using DataFrame index
+        plt.plot(subset.index, subset['duration'], label=f'Input {truncated_input}')  # Using DataFrame index
+    plt.axhline(y=function_slos[func_type], color='r', linestyle='--', label='SLO')  # SLO line
     plt.title(f'Duration Plot for {func_type}')
     plt.xlabel('Index (Row Number)')
     plt.ylabel('Duration')
