@@ -268,6 +268,7 @@ def run_final_experiment():
                     'prediction_time': [end_pred_time - start_pred_time]
                 })
                 output_df = pd.concat([output_df, data_to_add], ignore_index=True)
+                output_df.to_csv("final_results_on_measurement_data.csv")
             else:
                 print("ERROR: NOT SUCCESS")
             
