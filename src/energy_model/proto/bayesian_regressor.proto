@@ -1,0 +1,20 @@
+syntax = "proto3";
+package bayesian_regressor;
+
+
+message predictCPUFrequencyRequest {
+    string function = 1;
+    repeated string inputs = 2;
+    double slo = 3;
+}
+
+
+message Reply {
+    string status = 1;
+    int32 cpu = 2;
+    int32 frequency = 3;
+}
+
+service BayesianRegressor {
+    rpc predictCPUFrequency (predictCPUFrequencyRequest) returns (Reply) {}
+}

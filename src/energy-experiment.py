@@ -15,8 +15,10 @@ import requests
 import urllib3
 import os
 from enum import Enum
+import traceback
 
 from generated import lachesis_pb2_grpc, lachesis_pb2, cypress_pb2_grpc, cypress_pb2
+from energy_model.generated import bayesian_regressor_pb2, bayesian_regressor_pb2_grpc
 
 
 # Used for interacting with OpenWhisk API
@@ -99,8 +101,8 @@ def register_floatmatmult_mem_test_functions():
 
         parameters = ['endpoint:\"10.52.2.197:9002\"', 'access_key:\"testkey\"', 'secret_key:\"testsecret\"', 'bucket:\"openwhisk\"']
 
-        for memory in [1024, 2048, 4096]:
-            for frequency in [1000000, 1800000, 2400000]:
+        for memory in [1024]:
+            for frequency in [1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000]:
                 # Floatmatmult
                 function_metadata = ['docker:psinha25/main-python']
                 response = stub.Register(lachesis_pb2.RegisterRequest(function='floatmatmult',
@@ -108,7 +110,7 @@ def register_floatmatmult_mem_test_functions():
                                                                     function_metadata=function_metadata,
                                                                     parameters=parameters,
                                                                     memory=memory,
-                                                                    cpu=2,
+                                                                    cpu=4,
                                                                     frequency=frequency))
                 print(response)
 
@@ -121,7 +123,9 @@ def test_floatmatmult_scheduler_test():
         stub = lachesis_pb2_grpc.LachesisStub(channel)
         
         floatmatmul_input = "matrix1_4000_0.7.txt"
-        mem_freq = [(1024, 1000000), (2048, 1800000), (4096, 2400000)]
+        # mem_freq = [(1024, 1000000), (1024, 1200000), (1024, 1400000), (1024, 1600000), (1024, 1800000), (1024, 2000000), (1024, 2200000), (1024, 2400000)]
+        # mem_freq = [(1024, 1200000)]
+        mem_freq = [(1024, 1000000)]
         cpu = 2
         for (mem, frequency) in mem_freq:
             print(f"Running floatmatmult with frequency: {frequency}, cpu: {cpu}, memory: {mem}")
@@ -130,11 +134,11 @@ def test_floatmatmult_scheduler_test():
             parameter_list.append(floatmatmul_input)
             slo = float(76132.2 * (1 + SLO_MULTIPLIER))
 
-            response = stub.Invoke(lachesis_pb2.InvokeRequest(function='floatmatmult', slo=slo, parameters=parameter_list, cpu=cpu, memory=mem, frequency=frequency))
+            response = stub.Invoke(bayesian_regressor_pb2.InvokeRequest(function='floatmatmult', slo=slo, parameters=parameter_list, cpu=cpu, memory=mem, frequency=frequency))
             print(f'Resposne for function floatmatmult: {response}')
             # check if function invocation is completed
             pk = response.primary_key
-            time.sleep(10)
+            time.sleep(0.5)
     db_conn.close()
     print('Completed floatmatmul invocations')
 
@@ -172,6 +176,141 @@ def test_floatmatmult_mem_test():
     db_conn.close()
     print('Completed floatmatmul invocations')
 
+
+def run_final_experiment():
+
+    db_conn = sqlite3.connect(CONTROLLER_DB)
+    cursor = db_conn.cursor()
+
+    measurement_study_df = dict()
+    floatmatmult_file_path = '../data_processing/filtered_data/filtered_floatmatmult.csv'
+    imageprocess_file_path = '../data_processing/filtered_data/filtered_imageprocess.csv'
+    videoprocess_file_path = '../data_processing/filtered_data/filtered_videoprocess.csv'
+    encrypt_file_path = '../data_processing/filtered_data/filtered_encrypt.csv'
+    linpack_file_path = '../data_processing/filtered_data/filtered_linpack.csv'
+
+    measurement_study_df["floatmatmult"] = pd.read_csv(floatmatmult_file_path)
+    measurement_study_df["imageprocess"] = pd.read_csv(imageprocess_file_path)
+    measurement_study_df["videoprocess"] = pd.read_csv(videoprocess_file_path)
+    measurement_study_df["encrypt"] = pd.read_csv(encrypt_file_path)
+    measurement_study_df["linpack"] = pd.read_csv(linpack_file_path)
+
+    inputs = {
+        "floatmatmult": ([["matrix1_1000_0.3.txt", "matrix1_1000_0.3.txt"], ["matrix1_1000_0.7.txt", "matrix1_1000_0.7.txt"], ["matrix1_2000_0.3.txt", "matrix1_2000_0.3.txt"], ["matrix1_2000_0.7.txt", "matrix1_2000_0.7.txt"], ["matrix1_4000_0.3.txt", "matrix1_4000_0.3.txt"], ["matrix1_4000_0.7.txt", "matrix1_4000_0.7.txt"], ["matrix1_6000_0.3.txt", "matrix1_6000_0.3.txt"], ["matrix1_6000_0.7.txt", "matrix1_6000_0.7.txt"], ["matrix1_8000_0.3.txt", "matrix1_8000_0.3.txt"], ["matrix1_8000_0.7.txt", "matrix1_8000_0.7.txt"]], 76132.2),
+
+        "imageprocess": ([["13M-st_basils_cathedral_2_516323.jpg"], ["952K-iris_and_daisies_2_194935.jpg"], ["1.3M-daisy_514381.jpg"], ["4.5M-more_toys_514506.jpg"], ["2.5M-red_velvet_514717.jpg"], ["1.8M-deserted_bench_197838.jpg"], ["2.9M-water_splash_515404.jpg"], ["1.6M-lisbon_sunset_514529.jpg"], ["3.7M-south_boston_va_516934.jpg"], ["18M-sand_dunes_nightlife_516040.jpg"], ["1.4M-sunset_river_514676.jpg"], ["5.7M-yantra_river_514678.jpg"], ["1.3M-pigeon_2_197296.jpg"], ["5.6M-statue_of_liberty_original_model_version_2_517010.jpg"], ["6.4M-peacock_butterfly_2_514342.jpg"], ["4.6M-that_was_the_end_this_is_the_begining_513290.jpg"], ["2.4M-venice_in_winter_513381.jpg"], ["2.5M-feliz_quinta_flower_513506.jpg"], ["4.9M-seeing_red_515961.jpg"], ["1.9M-walk_away_517169.jpg"], ["3.4M-glass_chess_2_515415.jpg"], ["1.8M-opera_2_199207.jpg"], ["3.5M-standing_restrictions_explored_14th_january_2013_46_513166.jpg"], ["17M-week_2_majestic_rock_514665.jpg"], ["3.0M-french_fries_516538.jpg"], ["916K-pollution_2_514607.jpg"], ["6.1M-fire_514822.jpg"], ["7.9M-craggy_rock_517201.jpg"], ["4.6M-german_air_force_a340_3001602_517125.jpg"], ["7.8M-26365_kitty_515094.jpg"], ["7.4M-ford_gt_35_15_516157.jpg"], ["13M-forest_515915.jpg"], ["5.1M-itsthemensworld_514784.jpg"], ["5.6M-pink_sorrel_515688.jpg"], ["6.1M-simple_landscape_2_515009.jpg"], ["28M-the_river_514681.jpg"], ["5.9M-camping_516859.jpg"], ["5.7M-forest_floor_515925.jpg"], ["4.0M-quotfrench_lacequot_rose_516786.jpg"], ["2.4M-autumn_trees_2_194901.jpg"], ["4.5M-forest_513174.jpg"], ["1.4M-leaves_of_grass_515433.jpg"], ["6.8M-eiffel_ice_516309.jpg"], ["5.7M-winter_in_leeds_513733.jpg"], ["4.5M-hunting_a_toy_514521.jpg"], ["4.3M-sunset_and_evening_1_of_2_515486.jpg"], ["12M-disabled_fashion_513292.jpg"], ["3.9M-mouettes_seagulls_514235.jpg"], ["1.6M-white_tulips_514483.jpg"], ["9.2M-rose_2_514080.jpg"], ["3.2M-heathcote_515292.jpg"], ["2.5M-fashion_cupcakes_513638.jpg"], ["4.0M-hi_there_513531.jpg"], ["4.7M-cape_daisy_2_514383.jpg"], ["4.1M-backlit_flower_513144.jpg"], ["6.3M-cafe_coffe_515939.jpg"], ["8.2M-my_soul_517211.jpg"], ["7.8M-heavy_snow_2_516009.jpg"], ["1.7M-joe_joe_taking_flight_513760.jpg"], ["3.8M-sunset_and_evening_2_of_2_515480.jpg"], ["4.2M-praa_sands_2_516054.jpg"], ["30M-river_landscape_515440.jpg"], ["6.2M-dark_city_513227.jpg"], ["1.3M-one_tacky_cup_515072.jpg"]], 5491.8),
+
+        "videoprocess": ([["1.5M-bird.avi"], ["820K-cbw3.avi"], ["660K-drop.avi"], ["6.1M-720.avi"], ["3.8M-lion-sample.avi"], ["5.6M-DLP_PART_2_768k.avi"], ["284K-flame.avi"], ["1008K-grb_2.avi"], ["2.2M.mp4"], ["404K-small.avi"], ["4.9M-640.avi"], ["5.6M.mp4"], ["3.8M.mp4"], ["4.9M.mp4"], ["6.1M.mp4"], ["2.2M-star_trails.avi"], ["11M-SampleVideo_1280x720_10mb.mp4"]], 20592.6),
+
+        "encrypt": ([["500", "25"], ["500", "30"], ["500", "50"], ["500", "75"], ["500", "100"], ["1000", "10"], ["1000", "25"], ["1000", "30"], ["1000", "50"], ["1000", "75"], ["1000", "100"], ["5000", "10"], ["5000", "25"], ["5000", "30"], ["5000", "50"], ["5000", "75"], ["5000", "100"], ["10000", "10"], ["10000", "25"], ["10000", "30"], ["10000", "50"], ["10000", "75"], ["10000", "100"], ["35000", "10"], ["35000", "25"], ["35000", "30"], ["35000", "50"], ["35000", "75"], ["500", "10"], ["35000", "100"], ["50000", "10"], ["50000", "25"], ["50000", "30"], ["50000", "50"], ["50000", "75"], ["50000", "100"]], 41125.799999999996),
+
+        "linpack": ([["5000"], ["500"], ["1000"], ["2000"], ["3500"], ["250"], ["750"], ["1500"], ["2500"], ["3000"], ["4000"], ["4500"]], 45008.67293666026)
+    }
+
+    port = '8080'
+
+    output_df = pd.DataFrame(columns=['function_type', 'function_input', 'predicted_cpu', 'predicted_frequency', 'energy', 'duration', 'cpu_util', 'prediction_time'])
+
+    with grpc.insecure_channel(f'localhost:{port}') as bayesian_channel:
+        bayesian_stub = bayesian_regressor_pb2_grpc.BayesianRegressorStub(bayesian_channel)
+
+        # with grpc.insecure_channel('localhost:50051') as lachesis_channel:
+        #     lachesis_stub = lachesis_pb2_grpc.LachesisStub(lachesis_channel)
+
+        for _ in range(5000):
+            
+            function_type = random.choice(list(inputs.keys()))
+            input_value = inputs[function_type]
+            function_input = random.choice(input_value[0])
+            function_slo = input_value[1]
+
+            print(f"Running {function_type} with input: {function_input} and SLO: {function_slo}")
+
+            start_pred_time = time.perf_counter()
+
+            response = None
+            try:
+                response = bayesian_stub.predictCPUFrequency(bayesian_regressor_pb2.predictCPUFrequencyRequest(function=function_type, inputs=function_input, slo=function_slo))
+            except Exception as e:
+                # Log the traceback to your server's log system
+                print(traceback.format_exc())
+                # Optionally, send a detailed error message back to the client
+                print('Server error: ' + str(e))
+                print(grpc.StatusCode.INTERNAL)
+                break
+
+            end_pred_time = time.perf_counter()
+
+            # parse response for inferred CPU and frequency
+            predicted_frequency = response.frequency
+            predicted_cpu = response.cpu
+            const_memory = 4096
+
+            print(f"Predicted freq: {predicted_frequency}, predicted cpu: {predicted_cpu}")
+
+            success, energy, latency, cpu_utilization = get_measurement_study_data(measurement_study_df[function_type], function_type, function_input, predicted_cpu, predicted_frequency)
+
+
+
+            if success:
+                # update database
+                cursor.execute('INSERT INTO fxn_exec_data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                        (function_type, 'NA', 'NA', 'NA', 'NA', latency, -1.0, function_slo, json.dumps(function_input), predicted_cpu, const_memory, -1.0, -1.0, -1.0, -1.0, -1.0, cpu_utilization, -1.0, 'NA', 'NA', 'NA', 1, predicted_cpu, const_memory, energy, predicted_frequency))
+                db_conn.commit()
+                data_to_add = pd.DataFrame({
+                    'function_type': [function_type],
+                    'function_input': [function_input],
+                    'predicted_cpu': [predicted_cpu],
+                    'predicted_frequency': [predicted_frequency],
+                    'energy': [energy],
+                    'duration': [latency],
+                    'cpu_util': [cpu_utilization],
+                    'prediction_time': [end_pred_time - start_pred_time]
+                })
+                output_df = pd.concat([output_df, data_to_add], ignore_index=True)
+            else:
+                print("ERROR: NOT SUCCESS")
+            
+            time.sleep(2)
+        
+    output_df.to_csv("final_results_on_measurement_data.csv")
+
+
+            # response = lachesis_stub.Invoke(lachesis_pb2.InvokeRequest(function=function_type, slo=function_slo, parameters=function_input, cpu=predicted_cpu, memory=const_memory, frequency=predicted_frequency))
+            # pk = response.primary_key
+            # waitForInvocationCompletion(pk, cursor)
+
+
+    db_conn.close()
+    print('Completed floatmatmul invocations')
+
+def get_measurement_study_data(df, function_type, function_input, predicted_cpu, predicted_frequency):
+    df_filtered = df[(df['cpu_limit'] == predicted_cpu) & (df['frequency'] == predicted_frequency)]
+    func_input_str = f'['
+    for i, param in enumerate(function_input):
+        final_param = None
+        try:
+            param_int = int(param)
+            final_param = str(float(param_int))
+        except:
+            final_param = param
+        func_input_str += f'"{final_param}"'
+        if (i < len(function_input) - 1):
+            func_input_str += ', '
+        else:
+            func_input_str += ']'
+    df_filtered = df_filtered[df_filtered['inputs'] == func_input_str]
+    if df_filtered.shape[0] == 0:
+        print("ERROR CASE 1")
+        return False, None, None, None
+    energy = df_filtered['energy'].median()
+    duration = df_filtered['duration'].median()
+    cpu_util = df_filtered['max_cpu'].median()
+    if energy <= 0 or duration <= 0 or cpu_util <= 0:
+        print("ERROR CASE 2")
+        return False, None, None, None
+    return True, energy, duration, cpu_util
+    
 
 '''
 Plotting Functions
@@ -772,7 +911,9 @@ if __name__=='__main__':
     # run_experiment()
 
     # register_floatmatmult_mem_test_functions()
-    test_floatmatmult_scheduler_test()
+    # test_floatmatmult_scheduler_test()
+
+    run_final_experiment()
 
     # test_floatmatmult_mem_test()
     # test_linpack()
