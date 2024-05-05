@@ -1,3 +1,6 @@
 benchmarks/minio-data/
 data_processing/plots/*
 *.tar.gz
+*.db
+src/azure_trace/AzureFunctionsInvocationTraceForTwoWeeksJan2021.txt
+*.csv

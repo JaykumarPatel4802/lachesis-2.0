@@ -52,12 +52,12 @@ pip3 install grpcio grpcio-tools
 
 ```
 python3 -m grpc_tools.protoc \
-    -I /home/$USER/lachesis/src/proto \
-    --python_out=/home/$USER/lachesis/src/generated \
-    --grpc_python_out=/home/$USER/lachesis/src/generated \
-    /home/$USER/lachesis/src/proto/*.proto
+    -I /home/$USER/lachesis-2.0/src/energy_model/proto \
+    --python_out=/home/$USER/lachesis-2.0/src/energy_model/generated \
+    --grpc_python_out=/home/$USER/lachesis-2.0/src/energy_model/generated \
+    /home/$USER/lachesis-2.0/src/energy_model/proto/*.proto
 
-sed -i -E 's/^import.*_pb2/from . \0/' /home/$USER/lachesis/src/generated/*.py
+sed -i -E 's/^import.*_pb2/from . \0/' /home/$USER/lachesis-2.0/src/energy_model/generated/*.py
 ```
 
 You might see the warning:

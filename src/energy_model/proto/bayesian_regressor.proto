@@ -13,6 +13,9 @@ message Reply {
     string status = 1;
     int32 cpu = 2;
     int32 frequency = 3;
+    string prediction_type = 4;
+    float energy = 5;
+    float confidence = 6;
 }
 
 service BayesianRegressor {

@@ -1,0 +1,8 @@
+grpcio
+grpcio-tools
+numpy
+pandas
+argparse
+docker
+seaborn
+grpc
